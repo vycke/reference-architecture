@@ -37,55 +37,47 @@ The core layer of this reference architecture consists of several linked compone
 Besides these linked components, several other components can live in the core layer. Examples are the browser **history** stack, or a **system tracker** that can be used for error handling and logging. 
 
 ### Application store
-An application store is used for global state management, and is often required for large-scale front-end applications. Ideally, the application store follows the patterns around [event sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). This means that the store should be: 
+An application store, or data storage, is used for global state management, and is often required for large-scale front-end applications. Ideally, the application store follows the patterns around [event sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). This means that the store should be: 
 
 - The data is stored in a **centralized** place;
 - **Event driven** to ensure that the store at determines how the data should change, based on the event;
 - **Immutable** to avoid the data in the store being mutated from outside of the store.
 
-> **NOTE**: many front-end applications use global state managements for all data. Many existing global state management packages like [Redux](https://redux.js.org/style-guide/style-guide) have a coupled state interface driven by reducer functions (`reducer: (state, event) => state`). As business-related state management is applied on a module-level in this reference architecture, the preferred method for global state management should have a decoupled state interface. 
-
-By introducing an access layer on top of the data storage, a decoupled state interface is introduced. Anywhere one can define events (`get`, `set`, `update`, `remove`) or a `transaction` that combines multiple events, that influence the data. Due to this decoupled state interface, it is the preferred approach in this reference architecture. However, both approaches are possible.
+To comply with the principles of this reference architecture, most business-related state management happens at the module-level. Furthermore, a decoupled state interface has a higher synergy with modules, making it more maintainable. The decoupled state interface is achieved by introducing an **access layer** on top of the data storage. Anywhere one can define events (`get`, `set`, `update`, `remove`) or a `transaction` that combines multiple events, that influence the data. Due to this decoupled state interface, it is the preferred approach in this reference architecture. However, both approaches are possible.
 
 ![](images/architecture-core-store.png)
+
+> **NOTE**: many front-end applications use global state managements for all data. Many existing global state management packages like [Redux](https://redux.js.org/style-guide/style-guide) have a coupled state interface driven by reducer functions (`reducer: (state, event) => state`).
 
 Whenever a component (from the core layer, or a UI component) triggers an event, the data storage is changed. The access layer also sends an event (including the changed data) via the pub/sub (except in case of a `get` event). Other components can subscribe to these events and act whenever the data changes. If the data structure in the storage is tree-like, the access layer is responsible to ensure that the corresponding tree-paths are provided with events via the pub/sub.
 
 ### API Gateway
 
-> **NOTE**: when there is only one external source, only one API client is used. Many API client packages (e.g. [Apollo Client](https://www.apollographql.com/client/) implement several of the described concepts and flows. 
+> **NOTE**: when there is only one external source, only one API client is used. Many API client packages (e.g. [Apollo Client](https://www.apollographql.com/client/) implement several of the described concepts and flows.
 
-There can be multiple API clients in the application at the same time (REST, SOAP, WebSocket, GraphQL, etc.). By placing a `mediator` on top of these clients, the UI components and other core parts of the application only have to interact with a single ’client’ object, the facade. 
-
-Some of these API clients can have their own caching mechanism (e.g. Apollo Client), but most don’t. By using the ‘Proxy’ pattern, an internal cache can be build into the `mediator` on top of all API clients. This cache should be according the `state-while-revalidate` pattern, which basically uses a set period in which a cache item is deemed valid. On every cache update, this period is set anew. This makes it also possible to combine data from different sources in the cache. One could also use the application state for this.
-
-The `mediator` could include a ‘circuitbreaker’ that becomes into effect when one API server errors (e.g. 404).
-
-The `mediator` could also be used to refresh authentication information (e.g. JWT tokens). Instead of checking this in the middleware of each client, it can be managed in the `mediator`, removing the need of a connection between the API clients and the stores. 
+Complex application often require connection to multiple external sources. These sources can require different types of connections (e.g. REST and GraphQL). To comply with the principles of the reference architecture, a [**mediator**](https://en.wikipedia.org/wiki/Mediator_pattern) is used. Within the mediator, each external source gets its own dedicated **client**. 
 
 ![](images/architecture-core-gateway.png)
 
-The `mediator` could apply middlewares for each outgoing request. This middleware could, for instance, be used for authentication token refreshing. The middleware checks if the authentication information is still valid.
+Each request, regardless of the related external source, goes through the mediator. The mediator sends each request though three components:
 
-If not, the request is aborted, and a callback is subscribed to the ‘refresh_completed’ event in the pubsub. If no refresh request is started (which is stored in the application state), a refresh request is started. On completion, the ‘refresh_completed’ event is fired on the pubsub.
+- The gateway **cache** is a proxy that stores all responses for various request definitions, for a certain period of time ('state-while-revalidate' pattern);
+- A [**circuit breaker**](https://en.wikipedia.org/wiki/Circuit_breaker_design_pattern) maintains the state of the external source. If a server error is received, outgoing requests are bounced to prevent reoccurring failure;
+- Each request is enhanced or aborted by a chain of **middleware** (e.g. the refreshing of authentication information before the actual request is send out). Each middleware in the chain has access to the application store and it can subscribe to store events via the pub/sub.
 
-Each API client can have its own middleware. Adding for instance a `Authentication Bearer` to a request object can differ per client. Some require middleware to do it (Apollo Client) while others require it to be in the request function itself as metadata (Axios). This means that adding the information to a request cannot happen in the middleware of the `mediator`. 
+After a request goes through these blocks, it will go to its specific client. The response is handled by passing it back to the component sending the request. In case of a `cache-network` strategy, the values from the cache are directly provided back to the component sending the request. In the mean time, the request goes through the chain and is send to the source. The moment the mediator receives the response, the mediator sends the response over the pub/sub. As the requesting component is subscribed to the pub/sub, it can update the shown cached values with the new values. 
 
 ## Modules
 
-> DDD
+Domain driven development
 
 ### Module architecture
 
 ![](images/architecture-module.png)
 
-actions vs. [saga pattern](https://microservices.io/patterns/data/saga.html)
-
 ### Types of modules
 
 ### Example
-
-> Example twitter response
 
 ## Components
 
