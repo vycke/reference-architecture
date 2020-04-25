@@ -13,7 +13,7 @@ This reference architecture aims to enable front-end engineers to create large s
 
 In the remainder of this document, several diagrams are displayed. The meaning of the different types of blocks in these diagrams are specified in the legend, below.
 
-![](/images/architecture-legend.png)
+![](images/architecture-legend.png)
 
 ## High-level overview
 The main idea behind the reference architecture is to implement [domain driven development](https://martinfowler.com/bliki/BoundedContext.html). To facilitate this, a simple [layered architecture](https://en.wikipedia.org/wiki/Multitier_architecture) with three layers is introduced:
@@ -22,7 +22,7 @@ The main idea behind the reference architecture is to implement [domain driven d
 - The **modules** layer represents the remainder of the presentation layer, but also the business layer. The majority of the work will be in this layer. A module (or a [cell](https://github.com/wso2/reference-architecture/blob/master/reference-architecture-cell-based.md) of modules) is created by applying [domain driven development](https://martinfowler.com/bliki/BoundedContext.html) in this layer;
 - The **core** layer represents the application and data access layer.
 
-![](/images/architecture-high-level.png)
+![](images/architecture-high-level.png)
 
 ## Application core layer
 The core layer of this reference architecture consists of several linked components, as visualized and detailed below. Combined, these components contribute to three principles of this architecture. 
@@ -32,25 +32,24 @@ The core layer of this reference architecture consists of several linked compone
 - The **pub/sub** is used to synchronize other components in the core layer, and asynchronously update the presentation layer when updates (e.g. responses from an API) come in. In addition, it can be used to allow for cross-browser tab synchronization of critical data; 
 - A **process manager** that is used to prioritize and manage heavy operations that run in the background on various (web-)workers.
 
-![](/images/architecture-core.png)
+![](images/architecture-core.png)
 
 Besides these linked components, several other components can live in the core layer. Examples are the browser **history** stack, or a **system tracker** that can be used for error handling and logging. 
 
 ### Application store
+An application store is used for global state management, and is often required for large-scale front-end applications. Ideally, the application store follows the patterns around [event sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). This means that the store should be: 
 
-Access layer is responsible that the correct events are send to the pub/sub in case of nested updates.
+- The data is stored in a **centralized** place;
+- **Event driven** to ensure that the store at determines how the data should change, based on the event;
+- **Immutable** to avoid the data in the store being mutated from outside of the store.
 
-![](/images/architecture-core-store.png)
+There are different implementations possible that follow these patterns. You could use multiple reducer functions (`reducer: (state, event) => state`) to define the storer (e.g. like [Redux](https://redux.js.org/style-guide/style-guide)). The biggest downside of this approach is that it has a coupled state interface, meaning that all configuration needs to happen in a central place. 
 
-State management should following the event-sourcing pattern (e.g. [Redux-style guide](https://redux.js.org/style-guide/style-guide) of [GactJS](https://github.com/gactjs/store/blob/master/docs/white-paper.md)). Event sourcing requires immutability, serializability (cloneable and reference-agnostic), and state centralization. There are two ways to build up the centralized state for an application:
+Another implementation would be to add an access layer on top of the data storage. This introduces a decoupled state interface. Anywhere one can define events (`get`, `set`, `update`, `remove`) or a `transaction` that combines multiple events, that influence the data. Due to this decoupled state interface, it is the preferred approach in this reference architecture. However, both approaches are possible.
 
-- Use reducer functions that handle events (e.g. Redux). These reducers determine how the state is mutating based on the provided information. Biggest downside is that the reducers have to be configured in one place, making the application state configuration highly coupled;
-	```
-	reducer: (state, action) => state
-	```
-- Use a decoupled access layer that allows for `set`, `get`, `update` and `remove` events. This allows decoupled useage of the global state.  
+![](images/architecture-core-store.png)
 
-In case the global state manages complex flows, [statecharts](https://statecharts.github.io/) should be used to shape (a part of) the state. Statecharts is another implementation of event-based state management. When using reducers, you can put in guards to mock a statechart. In case of an access layer, the actual shaping of the new state (through a statechart) happens outside of the state. A new state value is created and the `set` or `update` injects this into the global state.
+Whenever a component (from the core layer, or a UI component) triggers an event, the data storage is changed. The access layer also sends an event (including the changed data) via the pub/sub (except in case of a `get` event). Other components can subscribe to these events and act whenever the data changes. If the data structure in the storage is tree-like, the access layer is responsible to ensure that the corresponding tree-paths are provided with events via the pub/sub.
 
 ### API Gateway
 
@@ -64,7 +63,7 @@ The `mediator` could include a ‘circuitbreaker’ that becomes into effect whe
 
 The `mediator` could also be used to refresh authentication information (e.g. JWT tokens). Instead of checking this in the middleware of each client, it can be managed in the `mediator`, removing the need of a connection between the API clients and the stores. 
 
-![](/images/architecture-core-gateway.png)
+![](images/architecture-core-gateway.png)
 
 The `mediator` could apply middlewares for each outgoing request. This middleware could, for instance, be used for authentication token refreshing. The middleware checks if the authentication information is still valid.
 
@@ -78,7 +77,7 @@ Each API client can have its own middleware. Adding for instance a `Authenticati
 
 ### Module architecture
 
-![](/images/architecture-module.png)
+![](images/architecture-module.png)
 
 actions vs. [saga pattern](https://microservices.io/patterns/data/saga.html)
 
@@ -90,6 +89,6 @@ actions vs. [saga pattern](https://microservices.io/patterns/data/saga.html)
 
 ## Components
 
-![](/images/architecture-component.png)
+![](images/architecture-component.png)
 
 
