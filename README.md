@@ -13,7 +13,7 @@ This reference architecture aims to enable front-end engineers to create large s
 
 In the remainder of this document, several diagrams are displayed. The meaning of the different types of blocks in these diagrams are specified in the legend, below.
 
-/images/architecture-legend.png
+![](/images/architecture-legend.png)
 
 ## High-level overview
 The main idea behind the reference architecture is to implement [domain driven development](https://martinfowler.com/bliki/BoundedContext.html). To facilitate this, a simple [layered architecture](https://en.wikipedia.org/wiki/Multitier_architecture) with three layers is introduced:
@@ -22,7 +22,7 @@ The main idea behind the reference architecture is to implement [domain driven d
 - The **modules** layer represents the remainder of the presentation layer, but also the business layer. The majority of the work will be in this layer. A module (or a [cell](https://github.com/wso2/reference-architecture/blob/master/reference-architecture-cell-based.md) of modules) is created by applying [domain driven development](https://martinfowler.com/bliki/BoundedContext.html) in this layer;
 - The **core** layer represents the application and data access layer.
 
-/images/architecture-high-level.png
+![](/images/architecture-high-level.png)
 
 ## Application core layer
 The core layer of this reference architecture consists of several linked components, as visualized and detailed below. Combined, these components contribute to three principles of this architecture. 
@@ -32,7 +32,7 @@ The core layer of this reference architecture consists of several linked compone
 - The **pub/sub** is used to synchronize other components in the core layer, and asynchronously update the presentation layer when updates (e.g. responses from an API) come in. In addition, it can be used to allow for cross-browser tab synchronization of critical data; 
 - A **process manager** that is used to prioritize and manage heavy operations that run in the background on various (web-)workers.
 
-/images/architecture-core.png
+![](/images/architecture-core.png)
 
 Besides these linked components, several other components can live in the core layer. Examples are the browser **history** stack, or a **system tracker** that can be used for error handling and logging. 
 
@@ -40,7 +40,7 @@ Besides these linked components, several other components can live in the core l
 
 Access layer is responsible that the correct events are send to the pub/sub in case of nested updates.
 
-/images/architecture-core-store.png
+![](/images/architecture-core-store.png)
 
 State management should following the event-sourcing pattern (e.g. [Redux-style guide](https://redux.js.org/style-guide/style-guide) of [GactJS](https://github.com/gactjs/store/blob/master/docs/white-paper.md)). Event sourcing requires immutability, serializability (cloneable and reference-agnostic), and state centralization. There are two ways to build up the centralized state for an application:
 
@@ -64,7 +64,7 @@ The `mediator` could include a ‘circuitbreaker’ that becomes into effect whe
 
 The `mediator` could also be used to refresh authentication information (e.g. JWT tokens). Instead of checking this in the middleware of each client, it can be managed in the `mediator`, removing the need of a connection between the API clients and the stores. 
 
-/images/architecture-core-gateway.png
+![](/images/architecture-core-gateway.png)
 
 The `mediator` could apply middlewares for each outgoing request. This middleware could, for instance, be used for authentication token refreshing. The middleware checks if the authentication information is still valid.
 
@@ -78,7 +78,7 @@ Each API client can have its own middleware. Adding for instance a `Authenticati
 
 ### Module architecture
 
-/images/architecture-module.png
+![](/images/architecture-module.png)
 
 actions vs. [saga pattern](https://microservices.io/patterns/data/saga.html)
 
@@ -90,6 +90,6 @@ actions vs. [saga pattern](https://microservices.io/patterns/data/saga.html)
 
 ## Components
 
-/images/architecture-component.png
+![](/images/architecture-component.png)
 
 
