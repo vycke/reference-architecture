@@ -43,9 +43,9 @@ An application store is used for global state management, and is often required 
 - **Event driven** to ensure that the store at determines how the data should change, based on the event;
 - **Immutable** to avoid the data in the store being mutated from outside of the store.
 
-There are different implementations possible that follow these patterns. You could use multiple reducer functions (`reducer: (state, event) => state`) to define the storer (e.g. like [Redux](https://redux.js.org/style-guide/style-guide)). The biggest downside of this approach is that it has a coupled state interface, meaning that all configuration needs to happen in a central place. 
+> **NOTE**: many front-end applications use global state managements for all data. Many existing global state management packages like [Redux](https://redux.js.org/style-guide/style-guide) have a coupled state interface driven by reducer functions (`reducer: (state, event) => state`). As business-related state management is applied on a module-level in this reference architecture, the preferred method for global state management should have a decoupled state interface. 
 
-Another implementation would be to add an access layer on top of the data storage. This introduces a decoupled state interface. Anywhere one can define events (`get`, `set`, `update`, `remove`) or a `transaction` that combines multiple events, that influence the data. Due to this decoupled state interface, it is the preferred approach in this reference architecture. However, both approaches are possible.
+By introducing an access layer on top of the data storage, a decoupled state interface is introduced. Anywhere one can define events (`get`, `set`, `update`, `remove`) or a `transaction` that combines multiple events, that influence the data. Due to this decoupled state interface, it is the preferred approach in this reference architecture. However, both approaches are possible.
 
 ![](images/architecture-core-store.png)
 
