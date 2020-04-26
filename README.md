@@ -29,7 +29,7 @@ The core layer of this reference architecture consists of several linked compone
 
 - An application **store** that holds application critical data. This data directly impacts how the application behaves for users;
 - An **gateway** that is responsible for all outgoing communication. In case of a single external source, a single API client suffices. But when there are multiple external sources, the gateway acts like a mediator/facade that manages all requests for the different sources; 
-- The **pub/sub** is used to synchronize other components in the core layer, and asynchronously update the presentation layer when updates (e.g. responses from an API) come in. In addition, it can be used to allow for cross-browser tab synchronization of critical data; 
+- The **[pub/sub](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern)** is used to synchronize other components in the core layer, and asynchronously update the presentation layer when updates (e.g. responses from an API) come in. In addition, it can be used to allow for cross-browser tab synchronization of critical data; 
 - A **process manager** that is used to prioritize and manage heavy operations that run in the background on various (web-)workers.
 
 ![](images/architecture-core.png)
