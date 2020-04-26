@@ -2,7 +2,7 @@
 
 *Author(s)*: Kevin Pennekamp | front-end architect | [kevtiq.co](https://kevtiq.co) | <hello@kevtiq.co>
 
-> This document describes a front-end reference architecture for digital enterprises. It offers a framework-agnostic architecture focused on the application behind the user interface.
+> This document describes a front-end reference architecture for digital enterprises.  It offers a framework-agnostic architectural best practices focused on the application behind the user interface.
 
 ## Introduction
 This reference architecture aims to enable front-end engineers to create large scale applications for enterprises. These applications are characterized by large code-bases, long development time and. many external connections. But most importantly, many users. To achieve control over the business outcomes (adaptability, predictability, quality and innovation) of the application, three principles are key:
