@@ -34,7 +34,9 @@ The core layer centralizes critical components, as visualized below. This centra
 
 ![](images/architecture-core.png)
 
-Besides these linked components, several other components can live in the core layer. Examples are the browser **history** stack, or a **system tracker** that can be used for error handling and logging. 
+> **NOTE**: Not all components are required at all times. A process manager is only required when working with (multiple) (web-)workers. 
+
+Besides these components, several other components can live in the core layer. Examples are the browser **history** stack, or a **system tracker** that can be used for error handling and logging. 
 
 ### Application store
 An application store, or data storage, is used for global state management, and is often required for large-scale front-end applications. Ideally, the application store follows the patterns around [event sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). This means that the store should be: 
