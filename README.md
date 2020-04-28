@@ -1,22 +1,24 @@
 # Front-end reference architecture
 
-*Author(s)*: Kevin Pennekamp | front-end architect | [kevtiq.co](https://kevtiq.co) | <hello@kevtiq.co>
+_Author(s)_: Kevin Pennekamp | front-end architect | [kevtiq.co](https://kevtiq.co) | <hello@kevtiq.co>
 
 This document describes a reactive front-end reference architecture for digital enterprises. It offers a framework-agnostic architectural best practices focused on the application behind the user interface.
 
 ## Introduction
-The goal of this architecture is to enable front-end engineers to create large scale applications for enterprises. These applications are characterized by large code-bases, long development time and. many external connections. But most importantly, many users. To achieve control over the business outcomes (adaptability, predictability, quality and innovation) of the application, four principles are key:
+
+The goal of this architecture is to enable front-end engineers to create large scale applications for enterprises. These applications are characterized by large code-bases, long development time and. many external connections. But most importantly, many users. To achieve control over the business outcomes (adaptability, predictability, quality and innovation) of the application, an [antifragile](https://www.sciencedirect.com/science/article/pii/S1877050916302290) architecture is required, with four key principles:
 
 - **Scalability**, to deal with new user-features, new external APIs the application has to connect to and more heavy background tasks.
 - **Reactivity**, to automatically update the user interface based on interaction and (state) changes.
-- **Maintainability**, by applying  a solid structure, responsibilities of tasks, [separation of concerns](https://en.wikipedia.org/wiki/Separation_of_concerns), and modularity in the user interface.
-- **Resilience**, to ensure a stable user experience, by applying safe-guards in the heart of the application. 
+- **Maintainability**, by applying a solid structure, responsibilities of tasks, [separation of concerns](https://en.wikipedia.org/wiki/Separation_of_concerns), and modularity in the user interface.
+- **Resilience**, to ensure a stable user experience, by applying safe-guards in the heart of the application.
 
 In the remainder of this document, several diagrams are displayed. The meaning of the different types of blocks in these diagrams are specified in the legend, below.
 
 ![](images/architecture-legend.png)
 
 ## High-level overview
+
 The main idea behind the reference architecture is to implement [domain driven development](https://martinfowler.com/bliki/BoundedContext.html). To facilitate this, a simple [layered architecture](https://en.wikipedia.org/wiki/Multitier_architecture) with three layers is introduced:
 
 - The **routing** layer is part of the presentation layer. This layers determines which module(s) are presented to the user.
@@ -26,11 +28,12 @@ The main idea behind the reference architecture is to implement [domain driven d
 ![](images/architecture-high-level.png)
 
 ## Application core
+
 The core layer centralizes critical components, as visualized below. This centralization contributes to the maintainability of the application. Some components use a 'mediator' to allow for a `n` number of child components. The components below can be present in the core layer.
 
 - An application **store** that holds application critical data. This data directly impacts how the application behaves for users.
 - An **gateway** that is responsible for all outgoing communication. This can be as single API client, or a mediator with routing requests towards multiple external sources.
-- The **[pub/sub](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern)** is used to synchronize other components in the core layer, and asynchronously update the presentation layer. In addition, it can be used to allow for cross-browser tab synchronization of critical data; 
+- The **[pub/sub](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern)** is used to synchronize other components in the core layer, and asynchronously update the presentation layer. In addition, it can be used to allow for cross-browser tab synchronization of critical data;
 - A **process manager** that mediates and prioritizes computational heavy operations that run in the background on various (web-)workers.
 
 ![](images/architecture-core.png)
@@ -38,7 +41,8 @@ The core layer centralizes critical components, as visualized below. This centra
 Besides these components, several other components can live in the core layer. Examples are the browser **history** stack, and an **error tracker**.
 
 ### Application store
-An application store, or data storage, is used for global state management, and is often required for large-scale front-end applications. Ideally, the application store follows the patterns around [event sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). This means that the store should be: 
+
+An application store, or data storage, is used for global state management, and is often required for large-scale front-end applications. Ideally, the application store follows the patterns around [event sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). This means that the store should be:
 
 - The data is stored in a **centralized** place and is normalized, i.e. relational data should not be nested.
 - **Event driven** to ensure that the store at determines how the data should change, based on the event.
@@ -56,7 +60,7 @@ Whenever a component triggers an event, the data is changed. The access layer se
 
 > **NOTE**: in case of only one external source, a single API client can replace the gateway. Many open source API clients support most components described in this section (e.g. [Apollo Client](https://www.apollographql.com/client/)).
 
-The API gateway enables the application to connect to multiple external sources (e.g. REST and GraphQL) with dedicated API **clients** in a consistent way. It extracts critical components and let a [**mediator**](https://en.wikipedia.org/wiki/Mediator_pattern) share them with different API clients.  
+The API gateway enables the application to connect to multiple external sources (e.g. REST and GraphQL) with dedicated API **clients** in a consistent way. It extracts critical components and let a [**mediator**](https://en.wikipedia.org/wiki/Mediator_pattern) share them with different API clients.
 
 ![](images/architecture-core-gateway.png)
 
@@ -85,4 +89,3 @@ Domain driven development
 ![](images/architecture-component.png)
 
 ## CSS & user interface styling
-
