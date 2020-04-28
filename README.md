@@ -6,12 +6,13 @@ This document describes a reactive front-end reference architecture for digital 
 
 ## Introduction
 
-The goal of this architecture is to enable front-end engineers to create large scale applications for enterprises. These applications are characterized by large code-bases, long development time and. many external connections. But most importantly, many users. To achieve control over the business outcomes (adaptability, predictability, quality and innovation) of the application, an [antifragile](https://www.sciencedirect.com/science/article/pii/S1877050916302290) architecture is required, with four key principles:
+The goal of this architecture is to enable front-end engineers to create large scale applications for enterprises. These applications are characterized by large code-bases, long development time and. many external connections. But most importantly, many users. To achieve control over the business outcomes (adaptability, predictability, quality and innovation) of the application, an [antifragile](https://www.sciencedirect.com/science/article/pii/S1877050916302290) architecture is required, with five key principles:
 
-- **Scalability**, to deal with new user-features, new external APIs the application has to connect to and more heavy background tasks.
-- **Reactivity**, to automatically update the user interface based on interaction and (state) changes.
-- **Maintainability**, by applying a solid structure, responsibilities of tasks, [separation of concerns](https://en.wikipedia.org/wiki/Separation_of_concerns), and modularity in the user interface.
+- **Consistency** in user experience, but also for the engineers working on the application
 - **Resilience**, to ensure a stable user experience, by applying safe-guards in the heart of the application.
+- Update user interfaces **reactively** based on interactions and changes in the state.
+- **Scalability**, to deal with new features, external sources and heavy background tasks.
+- **Maintainability** forced combining the scalability and consistency principles with concepts like [separation of concerns](https://en.wikipedia.org/wiki/Separation_of_concerns), and modularity in the user interface.
 
 In the remainder of this document, several diagrams are displayed. The meaning of the different types of blocks in these diagrams are specified in the legend, below.
 
