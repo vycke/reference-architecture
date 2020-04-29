@@ -6,9 +6,9 @@ This document describes a reactive front-end reference architecture for digital 
 
 ## Introduction
 
-The goal of this architecture is to enable front-end engineers to create large scale applications for enterprises. These applications are characterized by large code-bases, long development time and. many external connections. But most importantly, many users. To achieve control over the business outcomes (adaptability, predictability, quality and innovation) of the application, an [antifragile](https://www.sciencedirect.com/science/article/pii/S1877050916302290) architecture is required, with five key principles:
+The goal of this architecture is to enable front-end engineers to create large scale applications for enterprises. These applications are characterized by large code-bases, long development time and many external connections. But most importantly, many users. To achieve control over the business outcomes (adaptability, predictability, quality and innovation) of the application, an [antifragile](https://www.sciencedirect.com/science/article/pii/S1877050916302290) architecture is required, with five key principles:
 
-- **Consistency** in user experience, but also for the engineers working on the application
+- **Consistency** in user experience, but also for the engineers working on the application.
 - **Resilience**, to ensure a stable user experience, by applying safe-guards in the heart of the application.
 - Update user interfaces **reactively** based on interactions and changes in the state.
 - **Scalability**, to deal with new features, external sources and heavy background tasks.
@@ -49,7 +49,7 @@ An application store, or data storage, is used for global state management, and 
 - **Event driven** to ensure that the store at determines how the data should change, based on the event.
 - **Immutable** to avoid the data in the store being mutated from outside of the store, increasing the resilience of the application.
 
-To comply with the principles of this architecture, an **access layer** that decouples the state interface, is used. This allows for higher scalability and maintainability. Store events (`get`, `set`, `update`, `remove` or `transaction`) can be defined and invoked on a module-level. The access layer handles these events and applies them on the **data storage**.
+To comply with the principles of this architecture, an **access layer** (or [**proxy**](https://en.wikipedia.org/wiki/Proxy_pattern)) that decouples the state interface, is used. This allows for higher scalability and maintainability. Store events (`get`, `set`, `update` or `remove`) can be defined and invoked on a module-level. The access layer handles these events and applies them on the **data storage**.
 
 ![](images/architecture-core-store.png)
 
