@@ -1,6 +1,8 @@
 # Front-end reference architecture
 
-_Author(s)_: Kevin Pennekamp | front-end architect | [kevtiq.co](https://kevtiq.co) | <hello@kevtiq.co>
+_version_: 0.2.1
+_Author(s)_: Kevin Pennekamp | front-end architect | [kevtiq.dev](https://kevtiq.dev) | <hello@kevtiq.dev>
+
 
 This document describes a reactive front-end reference architecture for digital enterprises. It offers a framework-agnostic architectural best practices focused on the application behind the user interface.
 
@@ -71,7 +73,9 @@ Each request, regardless of the related external source, goes through the mediat
 - A [**circuit breaker**](https://en.wikipedia.org/wiki/Circuit_breaker_design_pattern) maintains the state of the external source. If a server error is received, outgoing requests are bounced to prevent reoccurring failure.
 - Each request is enhanced or aborted by a chain of **middleware** (e.g. the refreshing of authentication information). Each middleware in the chain has access to the application store and it can subscribe to store events via the pub/sub.
 
-A response can be provided back to in the initiator in several ways. It can get back a value from the cache, wait for the response, or update reactively through the pub/sub. In case of a `cache-network` strategy a combination is used. The initiator gets back a cached value back first. After the response comes in, the initiator reactively updates to the new values.
+After the middleware, the correct `client` is chosen by the mediator. After a response is received, the mediator sends it back to the request initiator and the cache. In case of a `cache-network` strategy, the mediator first gives back a value from the cache to the initiator, before the request is send through the middleware and client. After the response is received, the cache is updated and the initiator receives the updated value. 
+
+> **NOTE**: in case your chosen UI framework does not allow of UI updates around asynchronous calls, you can utilize the pub/sub. The client can send the response through the pub/sub next to sending it back to the mediator. UI components from the `<<module>>` can subscribe to pub/sub to receive the response. 
 
 ## Modules
 
