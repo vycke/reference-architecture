@@ -1,7 +1,6 @@
 # Front-end reference architecture
 
-**version**: 0.2.1 |
-**Author(s)**: Kevin Pennekamp | front-end architect | [kevtiq.dev](https://kevtiq.dev) | <hello@kevtiq.dev>
+**version**: 0.2.1 | **Author(s)**: Kevin Pennekamp | front-end architect | [kevtiq.dev](https://kevtiq.dev) | <hello@kevtiq.dev>
 
 This document describes a reactive front-end reference architecture for digital enterprises. It offers a framework-agnostic architectural best practices focused on the application behind the user interface.
 
