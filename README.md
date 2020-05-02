@@ -1,6 +1,6 @@
 # Front-end reference architecture
 
-**version**: 0.2.1 | **Author(s)**: Kevin Pennekamp | front-end architect | [kevtiq.dev](https://kevtiq.dev) | <hello@kevtiq.dev>
+**version**: 0.3.0 | **Author(s)**: Kevin Pennekamp | front-end architect | [kevtiq.dev](https://kevtiq.dev) | <hello@kevtiq.dev>
 
 This document describes a reactive front-end reference architecture for digital enterprises. It offers a framework-agnostic architectural best practices focused on the application behind the user interface.
 
@@ -74,6 +74,10 @@ Each request, regardless of the related external source, goes through the mediat
 After the middleware, the correct `client` is chosen by the mediator. After a response is received, the mediator sends it back to the request initiator and the cache. In case of a `cache-network` strategy, the mediator first gives back a value from the cache to the initiator, before the request is send through the middleware and client. After the response is received, the cache is updated and the initiator receives the updated value.
 
 > **NOTE**: in case your chosen UI framework does not allow of UI updates around asynchronous calls, you can let the component subscribe to the pub/sub and have the mediator send the response via the pub/sub. you can utilize the pub/sub.
+
+To ensure resilience, each request should follow the same [statechart](https://statecharts.github.io/), as shown below. When all requests, regardless of their source, follows the same pattern, the API client and/or UI can consistently handle them. This particular statechart allows requests to be aborted (e.g. the requestor is removed from the DOM) or restarted (after failure). 
+
+![](images/architecture-core-gateway-statechart.png)
 
 ## Modules
 
