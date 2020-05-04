@@ -3,6 +3,9 @@
 ## Version 0.3.0
 
 - Added the request statechart, including explanation, in the API gateway section;
+- Updated legend to reflect the diagrams a bit better;
+- Added component architecture;
+- Added module architecture.
 
 ## Version 0.2.1
 

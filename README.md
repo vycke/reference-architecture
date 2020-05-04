@@ -11,10 +11,10 @@ The goal of this architecture is to enable front-end engineers to create large s
 - **Consistency** in user experience, but also for the engineers working on the application.
 - **Resilience**, to ensure a stable user experience, by applying safe-guards in the heart of the application.
 - Update user interfaces **reactively** based on interactions and changes in the state.
-- **Scalability**, to deal with new features, external sources and heavy background tasks.
+- **Scalability**, by creating reusable components to deal with new features, external sources and heavy background tasks.
 - **Maintainability** forced combining the scalability and consistency principles with concepts like [separation of concerns](https://en.wikipedia.org/wiki/Separation_of_concerns), and modularity in the user interface.
 
-In the remainder of this document, several diagrams are displayed. The meaning of the different types of blocks in these diagrams are specified in the legend, below.
+The architecture goes three levels deeps. The diagrams in the remainder of this document visualize these levels and how they interact with other levels. The meaning of the different types of blocks in these diagrams are specified in the legend, below.
 
 ![](images/architecture-legend.png)
 
@@ -30,7 +30,7 @@ The main idea behind the reference architecture is to implement [domain driven d
 
 ## Application core
 
-The core layer centralizes critical components, as visualized below. This centralization contributes to the maintainability of the application. Some components use a 'mediator' to allow for a `n` number of child components. The components below can be present in the core layer.
+The core layer centralizes critical *blocks*, as visualized below. This centralization contributes to the maintainability of the application. The books below can be present in the core layer.
 
 - An application **store** that holds application critical data. This data directly impacts how the application behaves for users.
 - An **gateway** that is responsible for all outgoing communication. This can be as single API client, or a mediator with routing requests towards multiple external sources.
@@ -39,7 +39,7 @@ The core layer centralizes critical components, as visualized below. This centra
 
 ![](images/architecture-core.png)
 
-Besides these components, several other components can live in the core layer. Examples are the browser **history** stack, and an **error tracker**.
+Besides these blocks, several other blocks can live in the core layer. Examples are the browser **history** stack, and an **error tracker**.
 
 ### Application store
 
@@ -49,23 +49,23 @@ An application store, or data storage, is used for global state management, and 
 - **Event driven** to ensure that the store at determines how the data should change, based on the event.
 - **Immutable** to avoid the data in the store being mutated from outside of the store, increasing the resilience of the application.
 
-To comply with the principles of this architecture, an **access layer** (or [**proxy**](https://en.wikipedia.org/wiki/Proxy_pattern)) that decouples the state interface, is used. This allows for higher scalability and maintainability. Store events (`get`, `set`, `update` or `remove`) can be defined and invoked on a module-level. The access layer handles these events and applies them on the **data storage**.
+To comply with the principles of this architecture, an **access layer** (or [**proxy**](https://en.wikipedia.org/wiki/Proxy_pattern)) *element* that decouples the state interface, is used. This allows for higher scalability and maintainability. Store events (`get`, `set`, `update` or `remove`) can be defined and invoked on a module-level. The access layer handles these events and applies them on the **data storage**.
 
 ![](images/architecture-core-store.png)
 
 > **NOTE**: many front-end applications use global state managements for all data. Many existing global state management packages like [Redux](https://redux.js.org/style-guide/style-guide) have a coupled state interface. Although state events can be defined elsewhere, they have to be configured in the store nonetheless.
 
-Whenever a component triggers an event, the data is changed. The access layer sends an event (including the changed data) via the pub/sub (except in case of a `get` event). Other components can subscribe to these events and act whenever the data changes. With normalized data, sending the correct events for related data is made possible, providing a more resilient experience.
+Whenever an element triggers an event, the data is changed. The access layer sends an event (including the changed data) via the pub/sub (except in case of a `get` event). Other elements can subscribe to these events and act whenever the data changes. With normalized data, sending the correct events for related data is made possible, providing a more resilient experience.
 
 ### API gateway
 
-> **NOTE**: in case of only one external source, a single API client can replace the gateway. Many open source API clients support most components described in this section (e.g. [Apollo Client](https://www.apollographql.com/client/)).
+> **NOTE**: in case of only one external source, a single API client can replace the gateway. Many open source API clients support most elements described in this section (e.g. [Apollo Client](https://www.apollographql.com/client/)).
 
-The API gateway enables the application to connect to multiple external sources (e.g. REST and GraphQL) with dedicated API **clients** in a consistent way. It extracts critical components and let a [**mediator**](https://en.wikipedia.org/wiki/Mediator_pattern) share them with different API clients.
+The API gateway enables the application to connect to multiple external sources (e.g. REST and GraphQL) with dedicated API **clients** in a consistent way. It extracts critical elements to one place, and let a [**mediator**](https://en.wikipedia.org/wiki/Mediator_pattern) share them with different API clients.
 
 ![](images/architecture-core-gateway.png)
 
-Each request, regardless of the related external source, goes through the mediator. The mediator sends each request though three components before it hits the API client:
+Each request, regardless of the related external source, goes through the mediator. The mediator sends each request though three *elements* before it hits the API client:
 
 - The gateway **cache** is a proxy that stores all responses for various request definitions, for a certain period of time ('state-while-revalidate' pattern).
 - A [**circuit breaker**](https://en.wikipedia.org/wiki/Circuit_breaker_design_pattern) maintains the state of the external source. If a server error is received, outgoing requests are bounced to prevent reoccurring failure.
@@ -73,9 +73,9 @@ Each request, regardless of the related external source, goes through the mediat
 
 After the middleware, the correct `client` is chosen by the mediator. After a response is received, the mediator sends it back to the request initiator and the cache. In case of a `cache-network` strategy, the mediator first gives back a value from the cache to the initiator, before the request is send through the middleware and client. After the response is received, the cache is updated and the initiator receives the updated value.
 
-> **NOTE**: in case your chosen UI framework does not allow of UI updates around asynchronous calls, you can let the component subscribe to the pub/sub and have the mediator send the response via the pub/sub. you can utilize the pub/sub.
+> **NOTE**: in case your chosen UI framework does not allow of UI updates around asynchronous calls, you can let the element subscribe to the pub/sub and have the mediator send the response via the pub/sub. you can utilize the pub/sub.
 
-To ensure resilience, each request should follow the same [statechart](https://statecharts.github.io/), as shown below. When all requests, regardless of their source, follows the same pattern, the API client and/or UI can consistently handle them. This particular statechart allows requests to be aborted (e.g. the requestor is removed from the DOM) or restarted (after failure). 
+To ensure resilience, each request should follow the same [statechart](https://statecharts.github.io/), as shown below. When all requests, regardless of their source, follows the same pattern, the API client and/or UI can consistently handle them. Each request starts in _idle_. When a request is started, it moves into the _loading_ state. From this state, four events can happen: success, abort, error or start. In case of the latter, the previous request is aborted and a new request is started.
 
 ![](images/architecture-core-gateway-statechart.png)
 
@@ -87,12 +87,19 @@ Domain driven development
 
 ![](images/architecture-module.png)
 
-### Types of modules
+> Types of modules
 
-### Example
-
-## Components
+### User interface components
+User interface components, or UI components, are the most important parts of the application, and the place you will spend the most time in. It is where the user actually sees and interacts with the application. It consists of five different elements that interact with each other. 
 
 ![](images/architecture-component.png)
+
+The API is how a component interacts with its parent, another UI component. The parent component can provide values, configuration and callbacks through the API. The values and configuration are, combined with the component state, used to render the UI. 
+
+The UI is the part the user sees and interacts with. On interaction, an action is invoked. This action can be defined in the component (single purpose) or in the module (multi purpose). The action can update the component state or invoke a callback received through the API. 
+
+A component also has an observer. The observer listens to the values from the API and the state for changes. When a change happens, it invokes a rerender of the UI, and optionally invokes an action. 
+
+> **NOTE**: the observer of a component is often handled by a framework like React or Vue
 
 ## CSS & user interface styling
