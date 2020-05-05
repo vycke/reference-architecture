@@ -1,5 +1,10 @@
 # CHANGE LOG
 
+## Version 0.4.0
+
+- Added module architecture & domain driven design example
+- Added the link between the data access layer of the application store and the mediator in the gateway
+
 ## Version 0.3.0
 
 - Added the request statechart, including explanation, in the API gateway section;
