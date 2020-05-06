@@ -113,7 +113,7 @@ The API is how a component interacts with its parent, another UI component. The 
 
 A user interacts with the UI. This interaction invokes an action. A component can use an action from the module or define the action itself. The action can update the component state or invoke a callback received through the API.
 
-> **NOTE**: modern UI frameworks like React and Vue handle the described observer.
-
 A component also has an observer. The observer listens to the values from the API and the state for changes. When a change happens, it invokes a re-render of the UI and invokes an action.
+
+> **NOTE**: modern UI frameworks like React and Vue handle the described observer.
 
