@@ -1,5 +1,8 @@
 # CHANGE LOG
 
+## Version 0.4.1
+- Spell-checked
+
 ## Version 0.4.0
 
 - Added module architecture & domain driven design example
