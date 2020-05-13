@@ -1,21 +1,18 @@
 # Front-end reference architecture
 
-##### _version 0.4.1_
+##### _version 0.5.0_
 
 **Author(s)**: Kevin Pennekamp | front-end architect | [kevtiq.dev](https://kevtiq.dev) | <hello@kevtiq.dev>
 
-This document describes a reactive reference architecture for front-end applications to build digital enterprises. It offers framework-agnostic best practices focused on the architecture behind the user interface.
+This document describes a reactive reference architecture for front-end applications (e.g. single-page applications) on a digital enterprise scale. It offers framework-agnostic best practices focused on the architecture behind the user interface.
  
 ## Introduction
 
-The goal of the architecture is to enable engineers to create large-scale applications. These applications have many users, external connections, and long development time. To achieve control over the business outcomes, it requires an [antifragile](https://www.sciencedirect.com/science/article/pii/S1877050916302290) architecture. There are six key principles:
+The goal of the architecture is to enable engineers to create large-scale applications. These applications have many users, external connections, and long development time. To achieve control over the business outcomes, it requires an [antifragile](https://www.sciencedirect.com/science/article/pii/S1877050916302290) architecture. There are three key principles:
 
-- **Consistency** in user experience, but also for the engineers working on the application.
-- **Resilience**, to ensure stable user experience, by applying safeguards in the application's core.
-- Enable development **agility** by focusing on reusable UI components.
-- A **reactive** user interface that updates based on interactions.
-- Modularity in core elements and user interface allows for easy **scalability**.
-- **Maintainability** through scalability, consistency and [separation of concerns](https://en.wikipedia.org/wiki/Separation_of_concerns).
+- **Resilience**, to ensure stable user experience that can be measured, by applying safeguards in the application's core.
+- A **reactive** user interface that updates based on interactions and applies [optimistic UI](https://www.smashingmagazine.com/2016/11/true-lies-of-optimistic-user-interfaces/) ahead of server responses.
+- **Composability** in core elements and user interface components to enable development *agility*, resulting in a *scalable* and *maintainable* solution with a *consistent* user experience. 
 
 The architecture goes three levels deeps. The legend below describes the meaning of the different visualizations in this document.
 
@@ -33,9 +30,9 @@ The main idea behind the reference architecture is to implement [domain driven d
 
 ## Application core
 
-The core layer centralizes critical *blocks*, as visualized below. This centralization contributes to the maintainability of the application. The blocks below can be present in the core layer.
+The core layer centralizes critical *blocks*, as visualized below. This centralization contributes to resilience of the application. The blocks below can be present in the core layer.
 
-- An application **store** that holds data impacting how the application behaves towards users.
+- An application **store** that holds data impacting how the application behaves towards users.i
 - A **gateway** handling all outgoing communication towards many external sources.
 - The **[pub/sub](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern)** synchronizes other elements in the core layer. The presentation layer can use to update. Besides, it allows for cross-browser tab synchronization.
 - A **process manager** mediates and prioritizes heavy background operations (i.e. web-workers).
@@ -51,7 +48,7 @@ Large applications use the store for global state management. The recommendation
 - It stores data in a **centralized** and normalizes the data, i.e. nesting of relational data is not allowed.
 - It is the owner of the data shape and mutations to increase resilience, i.e. it is **event-driven** and **immutable**.
 
-To follow the principles of this architecture, it uses an **access layer**. This *element* decouples the state interface, allowing for higher scalability and maintainability. Store events (`get`, `set`, `update`, or `remove`) can be defined and invoked on a module-level. The access layer handles these events and applies them to the **data storage**.
+To follow the principles of this architecture, it uses an **access layer**. This *element* decouples the state interface, allowing for better composability. Store events (`get`, `set`, `update`, or `remove`) can be defined and invoked on a module-level. The access layer handles these events and applies them to the **data storage**.
 
 ![](images/architecture-core-store.png)
 
@@ -63,14 +60,14 @@ Whenever an element triggers an event, the data is changed. The access layer sen
 
 > **NOTE**: in case of only one external source, a single API client can replace the gateway. Many open-source API clients support a similar structure (e.g. [Apollo Client](https://www.apollographql.com/client/)).
 
-The API gateway enables a consistent way to connect to many external sources (e.g. REST and GraphQL). A [**mediator**](https://en.wikipedia.org/wiki/Mediator_pattern) allows for sharing of generic elements with different **clients**.
+The API gateway enables a consistent way to connect various external sources (e.g. REST and GraphQL). A [**mediator**](https://en.wikipedia.org/wiki/Mediator_pattern) allows for sharing of generic elements with different **clients**.
 
 ![](images/architecture-core-gateway.png)
 
 Each request, regardless of the related external source, goes through the mediator. The mediator sends each request through three *elements* before it hits the API client:
 
 - The **cache** is a proxy that stores all responses, for a certain period ('state-while-revalidate' pattern). The mediator acts as the *data access layer* of the cache, as the application store.
-- A [**circuit breaker**](https://en.wikipedia.org/wiki/Circuit_breaker_design_pattern) maintains the state of the external source. If it receives a server error, it bounces outgoing requests to prevent reoccurring failure.
+- A [**circuit breaker**](https://en.wikipedia.org/wiki/Circuit_breaker_design_pattern) maintains the state of the external source. If it receives a server error, it bounces outgoing requests to prevent reoccurring failure. It can be seen as a first link in the chain of middleware.
 - A chain of **middleware** enhances each request (e.g. the refreshing of authentication information). The middleware has access to the application store and the pub/sub.
 
 The mediator sends the request to the correct client after the middleware. With a `cache-network` strategy, a cached value is provided first. When the mediator receives the response, it sends it to the request initiator and the cache.
@@ -105,7 +102,9 @@ There are three different modules identified in this reference architecture. Nes
 > **NOTE**: these module types are not exclusive. a _gateway_ can also be a _section_, and a _section_ can also be a *block*.
 
 ### User interface components
-User interface (UI) components are the most important parts of the application. It requires the most development time. It is where the user sees and interacts with the application. It comprises five different elements that interact with each other.
+User interface (UI) components are the most important parts of the application. It requires the most development time. It is where the user sees and interacts with the application. There are two different types of components. **Layout** components are used for default styling and positioning of content (e.g. a Stack component). As no business logic is present in these components, they live outside of the modules (e.g. inside a design system).
+
+**Content** components hold the user interface around business logic. These components live within the modules and use layout components internally. The consist of five different elements that interact with each other.
 
 ![](images/architecture-component.png)
 
@@ -113,5 +112,4 @@ The API is how a component interacts with its parent, another UI component. The 
 
 A user interacts with the UI. This interaction invokes an action. A component can use an action from the module or define the action itself. The action can update the component state or invoke a callback received through the API. The observer of a component listens to the values from the API and the state for changes. When a change happens, it invokes a re-render of the UI and invokes an action.
 
-> **NOTE**: modern UI frameworks like React and Vue handle the described observer.
-
+> **NOTE**: modern UI frameworks like React and Vue handle the described observer internally. React handles re-renders of the UI, while the lifecycles methods (e.g. `useEffect`) handle invoking actions. 
