@@ -1,18 +1,18 @@
 # Front-end reference architecture
 
-##### _version 0.5.0_
+##### _version 0.6.0_
 
 **Author(s)**: Kevin Pennekamp | front-end architect | [kevtiq.dev](https://kevtiq.dev) | <hello@kevtiq.dev>
 
 This document describes a reactive reference architecture for front-end applications (e.g. single-page applications) on a digital enterprise scale. It offers framework-agnostic best practices focused on the architecture behind the user interface.
- 
+
 ## Introduction
 
 The goal of the architecture is to enable engineers to create large-scale applications. These applications have many users, external connections, and long development time. To achieve control over the business outcomes, it requires an [antifragile](https://www.sciencedirect.com/science/article/pii/S1877050916302290) architecture. There are three key principles:
 
 - **Resilience**, to ensure stable user experience that can be measured, by applying safeguards in the application's core.
-- A **reactive** user interface that updates based on interactions and applies [optimistic UI](https://www.smashingmagazine.com/2016/11/true-lies-of-optimistic-user-interfaces/) ahead of server responses.
-- **Composability** in core elements and user interface components to enable development *agility*, resulting in a *scalable* and *maintainable* solution with a *consistent* user experience. 
+- A **reactive** application that updates based on (user interaction).
+- **Composability** in core elements and user interface components to enable development _agility_, resulting in a _scalable_ and _maintainable_ solution with a _consistent_ user experience.
 
 The architecture goes three levels deeps. The legend below describes the meaning of the different visualizations in this document.
 
@@ -30,12 +30,12 @@ The main idea behind the reference architecture is to implement [domain driven d
 
 ## Application core
 
-The core layer centralizes critical *blocks*, as visualized below. This centralization contributes to resilience of the application. The blocks below can be present in the core layer.
+The core layer centralizes critical _blocks_, as visualized below. This centralization contributes to resilience of the application. The blocks below can be present in the core layer.
 
 - An application **store** that holds data impacting how the application behaves towards users.i
 - A **gateway** handling all outgoing communication towards many external sources.
 - The **[pub/sub](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern)** synchronizes other elements in the core layer. The presentation layer can use to update. Besides, it allows for cross-browser tab synchronization.
-- A **process manager** mediates and prioritizes heavy background operations (i.e. web-workers).
+- A **process manager** mediates and prioritizes heavy background operations (i.e. web-workers) to increase the performance of the web application.
 
 ![](images/architecture-core.png)
 
@@ -48,7 +48,7 @@ Large applications use the store for global state management. The recommendation
 - It stores data in a **centralized** and normalizes the data, i.e. nesting of relational data is not allowed.
 - It is the owner of the data shape and mutations to increase resilience, i.e. it is **event-driven** and **immutable**.
 
-To follow the principles of this architecture, it uses an **access layer**. This *element* decouples the state interface, allowing for better composability. Store events (`get`, `set`, `update`, or `remove`) can be defined and invoked on a module-level. The access layer handles these events and applies them to the **data storage**.
+To follow the principles of this architecture, it uses an **access layer**. This _element_ decouples the state interface, allowing for better composability. Store events (`get`, `set`, `update`, or `remove`) can be defined and invoked on a module-level. The access layer handles these events and applies them to the **data storage**.
 
 ![](images/architecture-core-store.png)
 
@@ -64,9 +64,9 @@ The API gateway enables a consistent way to connect various external sources (e.
 
 ![](images/architecture-core-gateway.png)
 
-Each request, regardless of the related external source, goes through the mediator. The mediator sends each request through three *elements* before it hits the API client:
+Each request, regardless of the related external source, goes through the mediator. The mediator sends each request through three _elements_ before it hits the API client:
 
-- The **cache** is a proxy that stores all responses, for a certain period ('state-while-revalidate' pattern). The mediator acts as the *data access layer* of the cache, as the application store.
+- The **cache** is a proxy that stores all responses, for a certain period ('state-while-revalidate' pattern). The mediator acts as the _data access layer_ of the cache, as the application store.
 - A [**circuit breaker**](https://en.wikipedia.org/wiki/Circuit_breaker_design_pattern) maintains the state of the external source. If it receives a server error, it bounces outgoing requests to prevent reoccurring failure. It can be seen as a first link in the chain of middleware.
 - A chain of **middleware** enhances each request (e.g. the refreshing of authentication information). The middleware has access to the application store and the pub/sub.
 
@@ -80,31 +80,35 @@ To ensure resilience, each request should follow the same [statechart](https://s
 
 ## Modules
 
-Modules facilitate the concept of [domain driven development](https://martinfowler.com/bliki/BoundedContext.html). They implement the [flux pattern](https://facebook.github.io/flux/docs/in-depth-overview/) to arrange business-related logic, state, and UI components. It includes several *blocks*, as visualized below. Each module has **components** and **actions**. They represent the view and the logic of a (business-related) module. Both can interact with the application core. Components can read from the core, while actions can invoke events in the core and wait for a response.
+Modules facilitate the concept of [domain driven development](https://martinfowler.com/bliki/BoundedContext.html). They implement the [flux pattern](https://facebook.github.io/flux/docs/in-depth-overview/) to arrange business-related logic, state, and UI components. It includes several _blocks_, as visualized below. Each module has **components** and **actions**. They represent the view and the logic of a (business-related) module. Both can interact with the application core. Components can read from the core, while actions can invoke events in the core and wait for a response.
 ![](images/architecture-module.png)
 
 A module can also have a store. It acts similar to the application store. The store in a module is often used for modeling business logic. Here, the recommendation is to shape the data like a [state-machine](https://statecharts.github.io/what-is-a-state-machine.html) or [statechart](https://statecharts.github.io/what-is-a-statechart.html).
 
 > **NOTE**: the store can be implemented in the same way as the application store, or use features from a framework (e.g. React Context).
 
-Components, actions, and a store are common for most modules.  But some modules need other blocks.
+Components, actions, and a store are common for most modules. But some modules need other blocks.
 
 - A gateway or section module requires a **router**. It determines which **page** or module the user can interact with.
 - A route always associates with a module or a **page**. A page is a specialized component.
 
 ### Types of modules
+
 There are three different modules identified in this reference architecture. Nesting of modules is possible, regardless of their types.
 
 - A **gateway** module functions as a wrapper around other modules, based on routing. It provides logic and state towards the nested modules (e.g. the main application is as a gateway module).
 - Many applications have many pages related to each other. **Section** modules combine these pages and their business logic into a module (e.g. CRUD pages).
 - A **block** module is not related to a specific route but can be used anywhere in the application (e.g. shopping cart).
 
-> **NOTE**: these module types are not exclusive. a _gateway_ can also be a _section_, and a _section_ can also be a *block*.
+> **NOTE**: these module types are not exclusive. a _gateway_ can also be a _section_, and a _section_ can also be a _block_.
 
 ### User interface components
-User interface (UI) components are the most important parts of the application. It requires the most development time. It is where the user sees and interacts with the application. There are two different types of components. **Layout** components are used for default styling and positioning of content (e.g. a Stack component). As no business logic is present in these components, they live outside of the modules (e.g. inside a design system).
 
-**Content** components hold the user interface around business logic. These components live within the modules and use layout components internally. The consist of five different elements that interact with each other.
+User interface (UI) components are the most important parts of the application. It requires the most development time. It is where the user sees and interacts with the application. There are three different different types of components.
+
+- **Layout** components are used for positioning of content (e.g. a Stack component) and are generally stylingless by default (e.g. no background color). As no business logic is present in these components, they live outside of the modules (e.g. inside a design system).
+- **Interaction** components are generic components that allow the user to interact with the application (buttons, links, form elements, etc.). Similar to layout components they are stylingless by default, exist outside of the modules (e.g. inside a design system).
+- **Content** components hold the user interface around business logic. These components live within the modules and use layout components internally. The consist of five different elements that interact with each other.
 
 ![](images/architecture-component.png)
 
@@ -112,4 +116,27 @@ The API is how a component interacts with its parent, another UI component. The 
 
 A user interacts with the UI. This interaction invokes an action. A component can use an action from the module or define the action itself. The action can update the component state or invoke a callback received through the API. The observer of a component listens to the values from the API and the state for changes. When a change happens, it invokes a re-render of the UI and invokes an action.
 
-> **NOTE**: modern UI frameworks like React and Vue handle the described observer internally. React handles re-renders of the UI, while the lifecycles methods (e.g. `useEffect`) handle invoking actions. 
+> **NOTE**: modern UI frameworks like React and Vue handle the described observer internally. React handles re-renders of the UI, while the lifecycles methods (e.g. `useEffect`) handle invoking actions.
+
+## UI performance principles
+Users expect modern web applications to be performant. Several principles are facilitated by the reference architecture to increase the *perceived* performance. These principles describe the *where*, *when* and *how* of UI state management. 
+
+- [**Colocation (where)**](https://kentcdodds.com/blog/state-colocation-will-make-your-react-app-faster/): UI state should live next to the UI code where possible (component, module or application level). State updates will result in less re-renders (of parts) of the UI.
+- [**Data flow (where)**](https://overreacted.io/writing-resilient-components/#principle-1-dont-stop-the-data-flow): state that lives on a higher level should not be put in the state on a lower level. This breaks the data flow of the observer in the [component architecture](#user-interface-components).
+- [**Optimistic UI (when)**](https://www.smashingmagazine.com/2016/11/true-lies-of-optimistic-user-interfaces/): the expected result of asynchronous or heavy tasks are stored in the state, before the actual task is finished and its result is received. This is detailed in the diagram below.
+- **Transactions (how)**: when many state mutations are required, they should be combined in a single transaction. 
+- **[Statecharts](https://statecharts.github.io/) (how)**: UI state should be modeled as a statechart as much as possible, to improve the resilience of the UI.
+
+![](images/optimistic-ui.png)
+
+Next to these principles, **prefetching** of data (where possible) results in better  performance. When using *gateway* or *section* modules, different pages need different data. When entering a page (e.g. detail page), data for other pages can already be prefetched and put in the application/module store (e.g. for an overview page). Depending on the entry page and what exists in the store(s), different data is prefetched. 
+
+## Application governance
+
+- Allows for different data stores based on security guidelines
+- Allows for nested and composable role-based access control
+- role-based access control can be implemented on router, components, actions and even in the gateway middleware for different external sources
+
+![](images/rbac.png)
+
+Something about system tracker on the `<<core>>` for error handling and system logs

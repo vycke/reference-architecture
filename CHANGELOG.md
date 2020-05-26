@@ -1,11 +1,23 @@
 # CHANGE LOG
+
+## Version 0.7.0
+
+- Added a section around application governance (security and error handling).
+
+## Version 0.6.0
+
+- Added interaction component next to layout and content components;
+- Added a section around optimistic UI
+
 ## Version 0.5.0
+
 - Added a better example around components for the `observer`
 - Added that the circuitbreaker can be seen as the first link in the chain of middleware.
 - Updated the goals of the reference architecture
 - Added types of components
 
 ## Version 0.4.1
+
 - Spell-checked
 
 ## Version 0.4.0
