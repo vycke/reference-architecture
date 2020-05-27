@@ -1,6 +1,6 @@
 # Front-end reference architecture
 
-##### _version 0.6.0_
+##### _version 0.6.1_
 
 **Author(s)**: Kevin Pennekamp | front-end architect | [kevtiq.dev](https://kevtiq.dev) | <hello@kevtiq.dev>
 
@@ -83,7 +83,7 @@ To ensure resilience, each request should follow the same [statechart](https://s
 Modules facilitate the concept of [domain driven development](https://martinfowler.com/bliki/BoundedContext.html). They implement the [flux pattern](https://facebook.github.io/flux/docs/in-depth-overview/) to arrange business-related logic, state, and UI components. It includes several _blocks_, as visualized below. Each module has **components** and **actions**. They represent the view and the logic of a (business-related) module. Both can interact with the application core. Components can read from the core, while actions can invoke events in the core and wait for a response.
 ![](images/architecture-module.png)
 
-A module can also have a store. It acts similar to the application store. The store in a module is often used for modeling business logic. Here, the recommendation is to shape the data like a [state-machine](https://statecharts.github.io/what-is-a-state-machine.html) or [statechart](https://statecharts.github.io/what-is-a-statechart.html).
+A module can also have a store. It acts similar to the application store. The store in a module is often used for modeling business logic. It is recommended to follow the described [UI performance principles](#ui-performance-principles).
 
 > **NOTE**: the store can be implemented in the same way as the application store, or use features from a framework (e.g. React Context).
 
@@ -121,10 +121,10 @@ A user interacts with the UI. This interaction invokes an action. A component ca
 ## UI performance principles
 Users expect modern web applications to be performant. Several principles are facilitated by the reference architecture to increase the *perceived* performance. These principles describe the *where*, *when* and *how* of UI state management. 
 
-- [**Colocation (where)**](https://kentcdodds.com/blog/state-colocation-will-make-your-react-app-faster/): UI state should live next to the UI code where possible (component, module or application level). State updates will result in less re-renders (of parts) of the UI.
-- [**Data flow (where)**](https://overreacted.io/writing-resilient-components/#principle-1-dont-stop-the-data-flow): state that lives on a higher level should not be put in the state on a lower level. This breaks the data flow of the observer in the [component architecture](#user-interface-components).
-- [**Optimistic UI (when)**](https://www.smashingmagazine.com/2016/11/true-lies-of-optimistic-user-interfaces/): the expected result of asynchronous or heavy tasks are stored in the state, before the actual task is finished and its result is received. This is detailed in the diagram below.
-- **Transactions (how)**: when many state mutations are required, they should be combined in a single transaction. 
+- **[Colocation](https://kentcdodds.com/blog/state-colocation-will-make-your-react-app-faster/) (where)**: UI state should live next to the UI code where possible (component, module or application level). State updates will result in less re-renders (of parts) of the UI.
+- **[Data flow](https://overreacted.io/writing-resilient-components/#principle-1-dont-stop-the-data-flow) (where)**: state that lives on a higher level should not be put in the state on a lower level. This breaks the data flow of the observer in the [component architecture](#user-interface-components).
+- **[Optimistic UI](https://www.smashingmagazine.com/2016/11/true-lies-of-optimistic-user-interfaces/) (when)**: the expected result of asynchronous or heavy tasks are stored in the state, before the actual task is finished and its result is received. This is detailed in the diagram below.
+- **Transactions (how)**: when many state mutations are required, they should be combined in a single transaction (e.g. in the [application store](#application-store)). 
 - **[Statecharts](https://statecharts.github.io/) (how)**: UI state should be modeled as a statechart as much as possible, to improve the resilience of the UI.
 
 ![](images/optimistic-ui.png)

@@ -4,6 +4,9 @@
 
 - Added a section around application governance (security and error handling).
 
+## Version 0.6.1
+- Small textual changes
+
 ## Version 0.6.0
 
 - Added interaction component next to layout and content components;
