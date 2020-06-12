@@ -1,6 +1,6 @@
 # Front-end reference architecture
 
-##### _version 0.6.1_
+##### _version 1.0.0_
 
 **Author(s)**: Kevin Pennekamp | front-end architect | [kevtiq.dev](https://kevtiq.dev) | <hello@kevtiq.dev>
 
@@ -74,7 +74,7 @@ The mediator sends the request to the correct client after the middleware. With 
 
 > **NOTE**: in case your chosen UI framework does not allow of UI updates around asynchronous calls, you can let the element subscribe to the pub/sub and have the mediator send the response via the pub/sub. you can use the pub/sub.
 
-To ensure resilience, each request should follow the same [statechart](https://statecharts.github.io/), as shown below. When all requests, regardless of their source, follow the same pattern, the API client and/or UI can consistently handle them. Each request starts in _idle_. When a request is started, it moves into the _loading_ state. From this state, four events can happen: success, abort, error, or start. In the latter's case, the previous request is aborted, and a new request is started.
+To ensure resilience, each request should follow the same [statechart](https://statecharts.github.io/), as shown below. When all requests, regardless of their source, follow the same pattern, the API client and/or UI can consistently handle them. Each request starts in _idle_. A request can either start or be scheduled. Both from _idle_ and _scheduled_ the request can start. It now moves into the _loading_ state. From this state, four events can happen: success, abort, error, or start. In the latter's case, the previous request is aborted, and a new request is started.
 
 ![](images/architecture-core-gateway-statechart.png)
 
@@ -119,24 +119,32 @@ A user interacts with the UI. This interaction invokes an action. A component ca
 > **NOTE**: modern UI frameworks like React and Vue handle the described observer internally. React handles re-renders of the UI, while the lifecycles methods (e.g. `useEffect`) handle invoking actions.
 
 ## UI performance principles
-Users expect modern web applications to be performant. Several principles are facilitated by the reference architecture to increase the *perceived* performance. These principles describe the *where*, *when* and *how* of UI state management. 
+
+Users expect modern web applications to be performant. Several principles are facilitated by the reference architecture to increase the _perceived_ performance. These principles describe the _where_, _when_ and _how_ of UI state management.
 
 - **[Colocation](https://kentcdodds.com/blog/state-colocation-will-make-your-react-app-faster/) (where)**: UI state should live next to the UI code where possible (component, module or application level). State updates will result in less re-renders (of parts) of the UI.
 - **[Data flow](https://overreacted.io/writing-resilient-components/#principle-1-dont-stop-the-data-flow) (where)**: state that lives on a higher level should not be put in the state on a lower level. This breaks the data flow of the observer in the [component architecture](#user-interface-components).
 - **[Optimistic UI](https://www.smashingmagazine.com/2016/11/true-lies-of-optimistic-user-interfaces/) (when)**: the expected result of asynchronous or heavy tasks are stored in the state, before the actual task is finished and its result is received. This is detailed in the diagram below.
-- **Transactions (how)**: when many state mutations are required, they should be combined in a single transaction (e.g. in the [application store](#application-store)). 
+- **Transactions (how)**: when many state mutations are required, they should be combined in a single transaction (e.g. in the [application store](#application-store)).
 - **[Statecharts](https://statecharts.github.io/) (how)**: UI state should be modeled as a statechart as much as possible, to improve the resilience of the UI.
 
 ![](images/optimistic-ui.png)
 
-Next to these principles, **prefetching** of data (where possible) results in better  performance. When using *gateway* or *section* modules, different pages need different data. When entering a page (e.g. detail page), data for other pages can already be prefetched and put in the application/module store (e.g. for an overview page). Depending on the entry page and what exists in the store(s), different data is prefetched. 
+Next to these principles, **prefetching** of data (where possible) results in better performance. When using _gateway_ or _section_ modules, different pages need different data. When entering a page (e.g. detail page), data for other pages can already be prefetched and put in the application/module store (e.g. for an overview page). Depending on the entry page and what exists in the store(s), different data is prefetched.
 
 ## Application governance
+Governance in applications is vital for digital enterprises. It refers to the ongoing process of managing, monitoring, and auditing the use of the application. Several forms of governance are supported in this reference architecture. First of all it allows for 
 
-- Allows for different data stores based on security guidelines
-- Allows for nested and composable role-based access control
-- role-based access control can be implemented on router, components, actions and even in the gateway middleware for different external sources
+Role-based access management (RBAC) is the most straight forward auditing implementation for digital enterprises. This reference architecture facilitates several possibilities in the UI that can be applied.  
+
+- As the _router_ is the main entry-point of the application, the initial RBAC implementation needs to happen on this level.
+- Each _module router_ can apply the same level of RBAC implementation. This allows for complex, nested access rules based on the URL of the application.
+- RBAC can be applied inside a component (e.g. `return null` in case the user is not allowed to view the component) or in parent components by applying _conditional visibility_.
+- It is possible to Actions in _modules_ and _components_ can be guarded based on 
+- RBAC can be added to the _middleware_ of the _API gateway_. 
 
 ![](images/rbac.png)
 
-Something about system tracker on the `<<core>>` for error handling and system logs
+As JavaScript is an unsafe language by default (any user can alter it in the browser). So blocking rendering of the UI is not enough. When applied properly, _actions_ in modules and components can also be guarded based on the RBAC rules. Lastly, RBAC can be applied in the _middleware_ of the _API gateway_, to disallow connectivity to external sources completely. 
+
+But governance is not all about auditing and security. Monitoring is equally important. Monitoring ensures more information, i.e. context, is stored and maintained on defects.  The _event-driven_ nature of this reference architecture makes it possible to create this context. When implementing a system tracker, logging all pub/sub, API, navigation and store events creates this context.

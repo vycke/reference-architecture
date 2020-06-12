@@ -3,6 +3,7 @@
 ## Version 0.7.0
 
 - Added a section around application governance (security and error handling).
+- Changed request statechart to add a 'scheduled' state
 
 ## Version 0.6.1
 - Small textual changes
