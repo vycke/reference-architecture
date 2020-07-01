@@ -133,18 +133,19 @@ Users expect modern web applications to be performant. Several principles are fa
 Next to these principles, **prefetching** of data (where possible) results in better performance. When using _gateway_ or _section_ modules, different pages need different data. When entering a page (e.g. detail page), data for other pages can already be prefetched and put in the application/module store (e.g. for an overview page). Depending on the entry page and what exists in the store(s), different data is prefetched.
 
 ## Application governance
-Governance in applications is vital for digital enterprises. It refers to the ongoing process of managing, monitoring, and auditing the use of the application. Several forms of governance are supported in this reference architecture. First of all it allows for 
 
-Role-based access management (RBAC) is the most straight forward auditing implementation for digital enterprises. This reference architecture facilitates several possibilities in the UI that can be applied.  
+Governance in applications is vital for digital enterprises. It refers to the ongoing process of managing, monitoring, and auditing the use of the application. Several forms of governance are supported in this reference architecture. First of all it allows for
+
+Role-based access management (RBAC) is the most straight forward auditing implementation for digital enterprises. This reference architecture facilitates several possibilities in the UI that can be applied.
 
 - As the _router_ is the main entry-point of the application, the initial RBAC implementation needs to happen on this level.
 - Each _module router_ can apply the same level of RBAC implementation. This allows for complex, nested access rules based on the URL of the application.
 - RBAC can be applied inside a component (e.g. `return null` in case the user is not allowed to view the component) or in parent components by applying _conditional visibility_.
-- It is possible to Actions in _modules_ and _components_ can be guarded based on 
-- RBAC can be added to the _middleware_ of the _API gateway_. 
+- It is possible to add RBAC rules to the actions in _modules_ and _components_.
+- RBAC can be added to the _middleware_ of the _API gateway_.
 
 ![](images/rbac.png)
 
-As JavaScript is an unsafe language by default (any user can alter it in the browser). So blocking rendering of the UI is not enough. When applied properly, _actions_ in modules and components can also be guarded based on the RBAC rules. Lastly, RBAC can be applied in the _middleware_ of the _API gateway_, to disallow connectivity to external sources completely. 
+As JavaScript is an unsafe language by default (any user can alter it in the browser). So blocking rendering of the UI is not enough. When applied properly, _actions_ in modules and components can also be guarded based on the RBAC rules. Lastly, RBAC can be applied in the _middleware_ of the _API gateway_, to disallow connectivity to external sources completely.
 
-But governance is not all about auditing and security. Monitoring is equally important. Monitoring ensures more information, i.e. context, is stored and maintained on defects.  The _event-driven_ nature of this reference architecture makes it possible to create this context. When implementing a system tracker, logging all pub/sub, API, navigation and store events creates this context.
+But governance is not all about auditing and security. Monitoring is equally important. Monitoring ensures more information, i.e. context, is stored and maintained on defects. The _event-driven_ nature of this reference architecture makes it possible to create this context. When implementing a system tracker, logging all pub/sub, API, navigation and store events creates this context.
