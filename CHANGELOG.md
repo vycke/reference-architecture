@@ -1,41 +1,21 @@
 # CHANGE LOG
 
-## Version 0.7.0
+## Version 2.0.0
+Converted the reference architecture and all its diagrams to the [C4 model](https://c4model.com). This has some breaking changes:
 
-- Added a section around application governance (security and error handling).
-- Changed request statechart to add a 'scheduled' state
+- Combined components from the store and API gateway in a higher level, into to level 3 core container;
+- Added "dynamic diagrams" for the store and API gateway;
+- Added separate section for the pub/sub;
+- Removed some elements/components from the API gateway (the circuit breaker) as these are handled now by the gateway component and store container respectively. In addition, the link between the middleware and the pub/sub is removed, as this is now also handled by the gateway component.
 
-## Version 0.6.1
-- Small textual changes
 
-## Version 0.6.0
+## Version 1.0.0
+Initial and complete version of the reference architecture, including:
 
-- Added interaction component next to layout and content components;
-- Added a section around optimistic UI
+- High level overview;
+- Detailed views of the application core, and on lower level the store and API gateway;
+- Module architecture;
+- Component architecture;
+- Application goverance.
 
-## Version 0.5.0
 
-- Added a better example around components for the `observer`
-- Added that the circuitbreaker can be seen as the first link in the chain of middleware.
-- Updated the goals of the reference architecture
-- Added types of components
-
-## Version 0.4.1
-
-- Spell-checked
-
-## Version 0.4.0
-
-- Added module architecture & domain driven design example
-- Added the link between the data access layer of the application store and the mediator in the gateway
-
-## Version 0.3.0
-
-- Added the request statechart, including explanation, in the API gateway section;
-- Updated legend to reflect the diagrams a bit better;
-- Added component architecture;
-- Added module architecture.
-
-## Version 0.2.1
-
-- Updated the diagram and text in the 'API gateway' section. The client does not send an event via the pub/sub, as UI components can update UI state around async code themselves, so the do not need an observer pattern. In addition, a link between the store and the pub/sub is added to complete the section around the middleware.
