@@ -16,7 +16,7 @@ The goal of the architecture is to enable engineers to create large-scale applic
 
 The architecture uses the [C4 architecture](https://c4model.com) notation. The legend below describes the meaning of the different visualizations in this document.
 
-/images/c4-architecture-legend.png
+![](/images/c4-architecture-legend.png)
 
 ## System context and container overview
 
@@ -26,13 +26,13 @@ The main idea behind the reference architecture is to implement [domain driven d
 - Each application consists out of many **module** (or [cell](https://github.com/wso2/reference-architecture/blob/master/reference-architecture-cell-based.md)) containers. These represent the presentation layer, but also the business layer. Most of the work will be in these containers. A module represents a part of the business.
 - The **core** layer represents the application and data access layer.
 
-/images/c4-architecture-level-2.png
+![](/images/c4-architecture-level-2.png)
 
 ## The core container
 
 The core container centralizes critical _components_, as visualized below. This centralization contributes to the resilience of the application. Combined, there are three important component _groups_ that can be identified in the core container: a **store**, **pub/sub**, and **gateway**.
 
-/images/c4-architecture-level-3-core.png
+![](/images/c4-architecture-level-3-core.png)
 
 Besides these components, several other components can live in the core container. Examples are the browser **history** stack, an **error tracker** or a **process manager** mediates and prioritizes heavy background operations (i.e. web-workers) to increase the performance of the web application.
 
@@ -45,7 +45,7 @@ Large applications use the store for global state management. The recommendation
 
 To follow the principles of this architecture, it uses an **access layer**. This _component_ decouples the state interface, allowing for better composability. Store events (`get`, `set`, `update`, or `remove`) can be defined and invoked on a module-level. The access layer handles these events and applies them to the **data storage**, as visualized in the _dynamic diagram_ shown below.
 
-/images/c4-architecture-dynamic-diagram-store.png
+![](/images/c4-architecture-dynamic-diagram-store.png)
 
 > **NOTE**: many front-end applications use global state management for all data. Many existing global state management packages like [Redux](https://redux.js.org/style-guide/style-guide) have a coupled state interface. Although events are defined elsewhere, they have to be configured in the store.
 
@@ -62,7 +62,7 @@ The [pub/sub](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern) a
 
 The API gateway enables a consistent way to connect various external sources or APIs (e.g. REST and GraphQL). The *gateway*, *middleware*, and *client* components act as the API gateway. Each external source has its own corresponding **client** component. This component sends out the actual request. Each client has a chain of **middleware**, that enhances each request (e.g. add authentication information).
 
-/images/c4-architecture-dynamic-diagram-gateway.png
+![](/images/c4-architecture-dynamic-diagram-gateway.png)
 
 Each request, regardless of the related external source, first goes through the gateway. The gateway is a [**mediator**](https://en.wikipedia.org/wiki/Mediator_pattern) allows for the sharing of generic logic between different clients of different external sources. This mediator handles:
 
@@ -78,13 +78,13 @@ If a request has a `cache-network` strategy, a cached value from the store is pr
 
 To ensure resilience, each request should follow the same [statechart](https://statecharts.github.io/), as shown below. When all requests, regardless of their source, follow the same pattern, the API client and/or UI can handle them. Each request starts in _idle_. A request can either start or be scheduled. Both from _idle_ and _scheduled_ the request can start. It now moves into the _loading_ state. From this state, four events can happen: success, abort, error, or start. In the latter's case, the previous request is aborted, and a new request is started.
 
-/images/gateway-statechart.png
+![](/images/gateway-statechart.png)
 
 ## Module containers
 
 Modules represent the concept of [domain driven development](https://martinfowler.com/bliki/BoundedContext.html). They implement the [flux pattern](https://facebook.github.io/flux/docs/in-depth-overview/) to arrange business-related logic, state, and UI components. It includes several _components_, as visualized below. Each module has **UI components** and **actions**. They represent the view and the logic of a (business-related) module. Both can interact with the application core. UI components can read from the core, while actions can invoke events in the core and wait for a response.
 
-/images/c4-architecture-level-3-module.png
+![](/images/c4-architecture-level-3-module.png)
 
 A module can also have a store. It acts the same as the application store. The store in a module is often used for modeling business logic. It is recommended to follow the described [UI performance principles](#ui-performance-principles).
 
@@ -113,7 +113,7 @@ User interface (UI) components are the most important parts of the application. 
 - **Interaction** components are generic components that allow the user to interact with the application (buttons, links, form elements, etc.). Similar to layout components they are without styling by default, exist outside of the modules (e.g. inside a design system).
 - **Content** components hold the user interface around the business logic. These components live within the modules and use layout components. They comprise out of five different elements that interact with each other.
 
-/images/c4-architecture-level-4-component.png
+![](/images/c4-architecture-level-4-component.png)
 
 The API is how a component interacts with its parent, another UI component. The parent component can provide values, configuration, and callbacks through the API. The values and configuration are, combined with the component state, used to render the UI.
 
