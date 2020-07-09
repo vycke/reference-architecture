@@ -10,10 +10,9 @@ This document describes a reactive reference architecture for front-end applicat
 
 The goal of the architecture is to enable engineers to create large-scale applications. These applications have many users, external connections, and long development time. To achieve control over the business outcomes, it requires an [antifragile](https://www.sciencedirect.com/science/article/pii/S1877050916302290) architecture. There are four key principles:
 
-- **Resilience**, to ensure a stable and measurable user experience.
+- **Resilience** and **performance**, to ensure a stable, fast, measurable user experience.
 - A **reactive** application that updates based on (user interaction).
 - **Composability** that enable development _agility_, resulting in a _scalable_ and _maintainable_ solution with a _consistent_ user experience.
-- By placing elements as close as possible to where they are needed, i.e. **colocation**, the application will be more performant and easier to _maintain_. 
 
 The architecture uses the [C4 architecture](https://c4model.com) notation. The legend below describes the meaning of the different visualizations in this document.
 
