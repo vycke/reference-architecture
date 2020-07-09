@@ -60,21 +60,21 @@ The [pub/sub](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern) a
 
 > **NOTE**: in case of only one external source, a single API client can replace the gateway. Many open-source API clients support a similar structure (e.g. [Apollo Client](https://www.apollographql.com/client/)).
 
-The API gateway enables a consistent way to connect various external sources or APIs (e.g. REST and GraphQL). The *gateway*, *middleware*, and *client* components act as the API gateway. Each external source has its own corresponding **client** component. This component sends out the actual request. Each client has a chain of **middleware**, that enhances each request (e.g. add authentication information).
+The API gateway enables a consistent way to connect various external sources or APIs (e.g. REST and GraphQL). The *gateway*, *middleware*, and *client* components act as the API gateway. Each external source has its own corresponding **client** component. This component sends out the actual request. Each client has a chain of **middleware**. A middleware is a [*decorator*](https://www.oreilly.com/library/view/learning-javascript-design/9781449334840/ch09s14.html) that enhances each request (e.g. add authentication information).
 
 ![](/images/c4-architecture-dynamic-diagram-gateway.png)
 
-Each request, regardless of the related external source, first goes through the gateway. The gateway is a [**mediator**](https://en.wikipedia.org/wiki/Mediator_pattern) allows for the sharing of generic logic between different clients of different external sources. This mediator handles:
+Each request, regardless of the related external source, first goes through the gateway. The gateway is a [*facade*](https://en.wikipedia.org/wiki/Facade_pattern) allows for the sharing of generic logic between different clients of different external sources. This facade handles:
 
 - Bouncing requests based on [RBAC rules](#application-governance).
-- Interact with a cache, by getting and setting data. In most cases, this is the application store, but sometimes a separate proxy cache is used. The gateway sets the lifespan of the cached data, using 'state-while-revalidate' pattern.
-- [**circuit breaking**](https://en.wikipedia.org/wiki/Circuit_breaker_design_pattern) to ensure only external APIs are called when they are available. If it receives a server error, it bounces future outgoing requests for a limited time, allowing the API to restart itself.
+- Interact with a cache, by getting and setting data. In most cases, this is the application store, but sometimes a separate proxy cache is used. The gateway sets the lifespan of the cached data, using `state-while-revalidate` pattern.
+- [*circuit breaking*](https://en.wikipedia.org/wiki/Circuit_breaker_design_pattern) to ensure only external APIs are called when they are available. If it receives a server error, it bounces future outgoing requests for a limited time, allowing the API to restart itself.
 - Implement logic for authentication information refreshing. If a refresh request is in flight, it queues all other requests until the refresh request is finished.
 - Send requests to the correct middleware and client.
 
 If a request has a `cache-network` strategy, a cached value from the store is provided first. When the gateway receives the response, it sends the updated data to the request initiator and the cache.
 
-> **NOTE**: in case your chosen UI framework does not allow of UI updates around asynchronous calls, you can let the element subscribe to the pub/sub and have the mediator send the response via the pub/sub. you can use the pub/sub.
+> **NOTE**: in case your chosen UI framework does not allow of UI updates around asynchronous calls, you can let the element subscribe to the pub/sub and have the facade send the response via the pub/sub. you can use the pub/sub.
 
 To ensure resilience, each request should follow the same [statechart](https://statecharts.github.io/), as shown below. When all requests, regardless of their source, follow the same pattern, the API client and/or UI can handle them. Each request starts in _idle_. A request can either start or be scheduled. Both from _idle_ and _scheduled_ the request can start. It now moves into the _loading_ state. From this state, four events can happen: success, abort, error, or start. In the latter's case, the previous request is aborted, and a new request is started.
 
