@@ -10,11 +10,20 @@ This document describes a reactive reference architecture for front-end applicat
 
 ## Introduction
 
-The goal of the architecture is to enable engineers to create large-scale applications. These applications have many users, external connections, and long development time. To achieve control over the business outcomes, it requires an [antifragile](https://www.sciencedirect.com/science/article/pii/S1877050916302290) architecture. There are three key principles:
+The goal of the architecture is to enable engineers to create large-scale applications. These applications have many users, external connections, and long development time. To achieve control over the business outcomes, it requires an [antifragile](https://www.sciencedirect.com/science/article/pii/S1877050916302290) architecture. There are three core principles:
 
 - **Consistent** _performance_ and _resilience_ ensure a good user experience.
 - A **reactive** application that updates based on (user interaction).
 - **Composability** that enable development _agility_, and a better _scalable_ solution.
+
+Combined, these core principles lead to several implementation principles around various topics (.e.g. state management).
+
+- **[Colocation](https://kentcdodds.com/blog/state-colocation-will-make-your-react-app-faster/) (where)**: code should live as closely as possible to where it is being used, fitting the architecture vision (element, component or container level).
+- **[Data flow](https://overreacted.io/writing-resilient-components/#principle-1-dont-stop-the-data-flow) (where)**: the state that lives on a higher level should not be put in the state on a lower level.
+- **[Optimistic UI](https://www.smashingmagazine.com/2016/11/true-lies-of-optimistic-user-interfaces/) (when)**: store the expected result of asynchronous or heavy tasks in the state before the actual task is finished. After the task is finished, the actual result is stored. 
+- **Transactions (how)**: avoid many state mutations at the same time should by combining them in a transaction.
+- **[Statecharts](https://statecharts.github.io/) (how)**: UI state should be modeled as a statechart as much as possible, to improve the resilience of the UI.
+- Data should be **pre-fetched** where possible. If the user enters a section of the application and is expected to stay there, data for different pages in this section can be pre-fetched. 
 
 The architecture is described using the [C4 architecture](https://c4model.com) notation. It slices a front-end application into 'components', as this fits most modern front-end frameworks. The legend below describes the meaning of the different visualizations in this document.
 
@@ -68,10 +77,9 @@ The API gateway enables a consistent way to connect various external sources or 
 
 ![](/images/c4-gateway-element-diagram.png)
 
-Each request, regardless of the related external source, first goes through the gateway[*facade*](https://en.wikipedia.org/wiki/Facade_pattern). It allows for the sharing of generic logic between different clients of different external sources. This facade handles:
+Each request, regardless of the related external source, first goes through the gateway [*facade*](https://en.wikipedia.org/wiki/Facade_pattern). It allows for the sharing of generic logic between different clients of different external sources. This facade handles:
 
-- Bouncing requests based on [RBAC rules](#application-governance).
-- Interact with a cache, by getting and setting data. In most cases, this is the application store, but sometimes a separate proxy cache is used. The gateway sets the lifespan of the cached data, using `state-while-revalidate` pattern.
+- Interact with a _proxy_ cache or the application store, by getting and setting data. The gateway sets the lifespan of the cached data, using `state-while-revalidate` pattern.
 - [*circuit breaking*](https://en.wikipedia.org/wiki/Circuit_breaker_design_pattern) to ensure only external APIs are called when they are available. If it receives a server error, it bounces future outgoing requests for a limited time, allowing the API to restart itself.
 - Implement logic for authentication information refreshing. If a refresh request is in flight, it queues all other requests until the refresh request is finished.
 - Send requests to the correct middleware and client.
@@ -80,7 +88,7 @@ If a request has a `cache-network` strategy, a cached value from the store is pr
 
 > **NOTE**: in case your chosen UI framework does not allow of UI updates around asynchronous calls, you can let the element subscribe to the pub/sub and have the facade send the response via the pub/sub. you can use the pub/sub.
 
-To ensure resilience, each request should follow the same [statechart](https://statecharts.github.io/), as shown below. When all requests, regardless of their source, follow the same pattern, the API client and/or UI can handle them. Each request starts in _idle_. A request can either start or be scheduled. Both from _idle_ and _scheduled_ the request can start. It now moves into the _loading_ state. From this state, four events can happen: success, abort, error, or start. In the latter's case, the previous request is aborted, and a new request is started.
+To ensure resilience, each request should follow the same basic [statechart](https://statecharts.github.io/), which can be expanded. Each request starts in _idle_. From _idle_ the request can start. It now moves into the _loading_ state. From this state, four events can happen: success, abort, error, or start. In the latter's case, the previous request is aborted, and a new request is started.
 
 ![](/images/gateway-statechart.png)
 
@@ -109,7 +117,7 @@ There are three different modules identified in this reference architecture. Nes
 
 > **NOTE**: these module types are not exclusive. a _gateway_ can also be a _section_, and a _section_ can also be a _block_.
 
-## User interface components
+## User interface component anatomy
 
 User interface (UI) components are the most important parts of the application. It requires the most development time. It is where the user sees and interacts with the application. There are three different component types.
 
@@ -117,25 +125,13 @@ User interface (UI) components are the most important parts of the application. 
 - **Interaction** components are generic components that allow the user to interact with the application (buttons, links, form elements, etc.). Similar to layout components they are without styling by default, exist outside of the modules (e.g. inside a design system).
 - **Content** components hold the user interface around the business logic. These components live within the modules and use layout components. They comprise out of five different elements that interact with each other.
 
-![](/images/c4-architecture-level-4-component.png)
+![](/images/ui-component-anatomy.png)
 
-The API is how a component interacts with its parent, another UI component. The parent component can provide values, configuration, and callbacks through the API. The values and configuration are, combined with the component state, used to render the UI.
+The API is how the parent UI component interact with this component. The parent component can provide values, configuration, and callbacks through the API. The values and configuration are, combined with the component state, used to render the UI.
 
 A user interacts with the UI. This interaction invokes an action. A component can use an action from the module or define the action itself. The action can update the component state or invoke a callback received through the API. The observer of a component listens to the values from the API and the state for changes. When a change happens, it invokes a re-render of the UI and invokes an action.
 
 > **NOTE**: modern UI frameworks like React and Vue handle the described observer. React handles re-renders of the UI, while the life-cycles methods (e.g. `useEffect`) handle invoking actions.
-
-## UI performance principles
-
-Users expect modern web applications to be high performing. Several principles are facilitated by the reference architecture to increase the _perceived_ performance. These principles describe the _where_, _when_, and _how_ of UI state management.
-
-- **[Colocation](https://kentcdodds.com/blog/state-colocation-will-make-your-react-app-faster/) (where)**: UI state should live next to the UI code where possible (component, module or application level). State updates will cause fewer re-renders (of parts) of the UI.
-- **[Data flow](https://overreacted.io/writing-resilient-components/#principle-1-dont-stop-the-data-flow) (where)**: the state that lives on a higher level should not be put in the state on a lower level. This breaks the data flow of the observer in the [component architecture](#user-interface-components).
-- **[Optimistic UI](https://www.smashingmagazine.com/2016/11/true-lies-of-optimistic-user-interfaces/) (when)**: store the expected result of asynchronous or heavy tasks in the state before the actual task is finished. After the task is finished, the actual result is stored. 
-- **Transactions (how)**: avoid many state mutations at the same time should by combining them in a transaction.
-- **[Statecharts](https://statecharts.github.io/) (how)**: UI state should be modeled as a statechart as much as possible, to improve the resilience of the UI.
-
-Next to these principles, **pre-fetching** of data (where possible) results in better performance. When using _gateway_ or _section_ modules, different pages need different data. When entering a page (e.g. detail page), data for other pages can already be pre-fetched and put in the application/module store (e.g. for an overview page). Depending on the entry page and what exists in the store(s), different data is pre-fetched.
 
 ## Application governance
 
@@ -147,7 +143,7 @@ Role-based access management (RBAC) is the most straight forward auditing implem
 - Each _module router_ can apply the same level of RBAC implementation. This allows for complex, nested access rules based on the URL of the application.
 - RBAC can be applied inside a UI component or in parent UI components with _conditional visibility_.
 - It is possible to add RBAC rules to the actions in _modules_ and _components_.
-- RBAC can be added to the _middleware_ of the _API gateway_.
+- RBAC rules can be added to the _facade_ element of the _gateway_ component.
 
 ![](images/rbac.png)
 
