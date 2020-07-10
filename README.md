@@ -145,8 +145,6 @@ Role-based access management (RBAC) is the most straight forward auditing implem
 - It is possible to add RBAC rules to the actions in _modules_ and _components_.
 - RBAC rules can be added to the _facade_ element of the _gateway_ component.
 
-![](images/rbac.png)
-
 Blocking the rendering of the UI is not enough. When applied, _actions_ in modules and   can implement the RBAC rules. 
 
 But governance is not all about auditing and security. Monitoring ensures more information, i.e. context, is available on defects. One can log all pub/sub, AP, navigation and store events. 
