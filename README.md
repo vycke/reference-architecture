@@ -57,7 +57,7 @@ Large applications use the store for global state management. The recommendation
 - It stores data in a **centralized** and normalizes the data, i.e. nesting of relational data is not allowed.
 - It is the owner of the data shape and mutations to increase resilience, i.e. it is **event-driven** and **immutable**.
 
-To follow the principles of this architecture, it uses an **access layer**. This _element_ decouples the state interface, allowing for better composability. Store events (`get`, `set`, `update`, or `remove`) can be defined and invoked on a module-level. The access layer handles these events and applies them to the **data storage**, as visualized in the _dynamic diagram_ shown below.
+To follow the principles of this architecture, it uses an **access layer**. This _element_ is an [*facade*](https://en.wikipedia.org/wiki/Facade_pattern) and decouples the state interface, allowing for better composability. Store events (`get`, `set`, `update`, or `remove`) can be defined and invoked on a module-level. The access layer handles these events and applies them to the **data storage**, as visualized below. Optionally, the access layer can be connected to multiple data storages.
 
 ![](/images/c4-store-element-diagram.png)
 
@@ -77,7 +77,7 @@ The API gateway enables a consistent way to connect various external sources or 
 
 ![](/images/c4-gateway-element-diagram.png)
 
-Each request, regardless of the related external source, first goes through the gateway [*facade*](https://en.wikipedia.org/wiki/Facade_pattern). It allows for the sharing of generic logic between different clients of different external sources. This facade handles:
+Each request, regardless of the related external source, first goes through a *facade*. It allows for the sharing of generic logic between different clients of different external sources. This facade handles:
 
 - Interact with a _proxy_ cache or the application store, by getting and setting data. The gateway sets the lifespan of the cached data, using `state-while-revalidate` pattern.
 - [*circuit breaking*](https://en.wikipedia.org/wiki/Circuit_breaker_design_pattern) to ensure only external APIs are called when they are available. If it receives a server error, it bounces future outgoing requests for a limited time, allowing the API to restart itself.
