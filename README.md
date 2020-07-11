@@ -30,17 +30,15 @@ The architecture is described using the [C4 architecture](https://c4model.com) n
 ![](/images/c4-legend.png)
 
 ## System context and containers
-Each front-end application is a container of a bigger system, that provides access to various different users. In digital enterprises, this system is never stand-alone. It is connected to various other systems. 
+Each front-end application is a container of a bigger system, that provides access to various different users. In digital enterprises, this system is never stand-alone. It is connected to various other systems. The *context diagram* is an example reference for a software system and how it relates to its environment. 
 
 ![](/images/c4-system-context-diagram.png)
 
-The front-end application is one of many containers in the system. The back-end can be a monolith or consist out of multiple micro-services. The front-end application uses an API container to talk to the back-end that is part of the system. However, the front-end application can also directly talk to external systems (e.g. public APIs). 
+The system consists of multiple containers. Containers are stand alone applications or a data store in the system. The front-end is one of these applications. The back-end can be a monolith or consist out of multiple micro-services. The front-end application uses an API container to talk to the back-end that is part of the system. However, the front-end application can also directly talk to external systems (e.g. public APIs). 
 
 ![](/images/c4-container-diagram.png)
 
-> **NOTE**: a container represents a stand alone application or data store in the system.
-
-## Front-end component diagram
+## Front-end architecture
 The main idea behind the front-end reference architecture is to implement [domain driven development](https://martinfowler.com/bliki/BoundedContext.html). Each bounded context is captured in a **module** (or [cell](https://github.com/wso2/reference-architecture/blob/master/reference-architecture-cell-based.md)) component. 
 
 > **NOTE**: a component is a conceptual grouping of functionalities.
