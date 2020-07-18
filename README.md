@@ -47,7 +47,7 @@ Next to the module components, there are several general components present in a
 
 ![](/images/c4-frontend-component-diagram.png)
 
-Besides the visualized application layer components, other components can be placed in this layer. Examples are the browser **history** stack, an **error tracker** or a **process manager** mediates and prioritizes heavy background operations (i.e. web-workers) to increase the performance of the web application.
+Besides the visualized application layer components, other components can be placed in this layer. Examples are a dedicated **[pub/sub](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern)** (e.g. for browser tab synchronization or scheduled events), the browser **history** stack, an **error tracker** or a **process manager** mediates and prioritizes heavy background operations (i.e. web-workers) to increase the performance of the web application.
 
 ## Application store
 Large applications use the store for global state management. The recommendation is that the store follows the patterns around [event sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). This means that the store should be:
@@ -55,18 +55,15 @@ Large applications use the store for global state management. The recommendation
 - It stores data in a **centralized** and normalizes the data, i.e. nesting of relational data is not allowed.
 - It is the owner of the data shape and mutations to increase resilience, i.e. it is **event-driven** and **immutable**.
 
-To follow the principles of this architecture, it uses an **access layer**. This _element_ is an [*facade*](https://en.wikipedia.org/wiki/Facade_pattern) and decouples the state interface, allowing for better composability. Store events (`get`, `set`, `update`, or `remove`) can be defined and invoked on a module-level. The access layer handles these events and applies them to the **data storage**, as visualized below. Optionally, the access layer can be connected to multiple data storages.
+To follow the principles of this architecture, it uses an **access layer**. This _element_ is an [*facade*](https://en.wikipedia.org/wiki/Facade_pattern) and decouples the state interface, allowing for better composability. Store events (`get` and `update`) can be defined and invoked on a module-level. The access layer handles these events and applies them to the **data storage**, as visualized below. Optionally, the access layer can be connected to multiple data storages.
 
 ![](/images/c4-store-element-diagram.png)
 
 > **NOTE**: many front-end applications use global state management for all data. Many existing global state management packages like [Redux](https://redux.js.org/style-guide/style-guide) have a coupled state interface. Although events are defined elsewhere, they have to be configured in the store.
 
-Whenever an element triggers an event, the data is changed. The access layer sends an event (including the changed data) via the pub/sub (except in case of a `get` event). Other elements can subscribe to these events and act whenever the data changes. The access layer can also subscribe to the pub/sub. This enables another way for the store to update (e.g. when requests come from a different browser tab).
+Whenever an element triggers an event, the data is changed. The access layer sends an `update` event via an integrated [pub/sub](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern). Other elements can subscribe to these events and act whenever the data changes. The access layer can also subscribe to the pub/sub. This enables another way for the store to update (e.g. when requests come from a different browser tab).
 
 Data in the data storage is normalized or shaped like a [Statecharts](https://statecharts.github.io/). This allows for more accurate update events to the subscribers.
-
-## Pub/sub
-The [pub/sub](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern) adds the ability to synchronize other components/elements on asynchronous tasks. It can update the presentation layer (e.g. UI components in modules) based on updates in the _store_. Another example is to use it for background tasks like synchronization between browser tabs, or resetting an auto-sign out timer.
 
 ## API gateway
 > **NOTE**: in case of only one external source, a single API client can replace the gateway. Many open-source API clients support a similar structure (e.g. [Apollo Client](https://www.apollographql.com/client/)).
