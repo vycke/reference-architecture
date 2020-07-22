@@ -6,7 +6,7 @@
 
 > "A good architecture enables agility" - Simon Brown, author of the C4 model
 
-This document describes a reactive reference architecture for front-end applications (e.g. single-page applications) on a digital enterprise scale. It offers framework-agnostic best practices focused on the architecture behind the user interface.
+This document describes a reactive reference architecture for client applications (e.g. single-page front-end applications, or React Native mobile applications) on a digital enterprise scale. It offers framework-agnostic best practices focused on the architecture behind the user interface.
 
 ## Introduction
 
@@ -20,26 +20,28 @@ Combined, these core principles lead to several implementation principles around
 
 - **[Colocation](https://kentcdodds.com/blog/state-colocation-will-make-your-react-app-faster/) (where)**: code should live as closely as possible to where it is being used, fitting the architecture vision (element, component or container level).
 - **[Data flow](https://overreacted.io/writing-resilient-components/#principle-1-dont-stop-the-data-flow) (where)**: the state that lives on a higher level should not be put in the state on a lower level.
-- **[Optimistic UI](https://www.smashingmagazine.com/2016/11/true-lies-of-optimistic-user-interfaces/) (when)**: store the expected result of asynchronous or heavy tasks in the state before the actual task is finished. After the task is finished, the actual result is stored. 
+- **[Optimistic UI](https://www.smashingmagazine.com/2016/11/true-lies-of-optimistic-user-interfaces/) (when)**: store the expected result of asynchronous or heavy tasks in the state before the actual task is finished. After the task is finished, the actual result is stored.
 - **Transactions (how)**: avoid many state mutations at the same time should by combining them in a transaction.
 - **[Statecharts](https://statecharts.github.io/) (how)**: UI state should be modeled as a statechart as much as possible, to improve the resilience of the UI.
-- Data should be **pre-fetched** where possible. If the user enters a section of the application and is expected to stay there, data for different pages in this section can be pre-fetched. 
+- Data should be **pre-fetched** where possible. If the user enters a section of the application and is expected to stay there, data for different pages in this section can be pre-fetched.
 
 The architecture is described using the [C4 architecture](https://c4model.com) notation. It slices a front-end application into 'components', as this fits most modern front-end frameworks. The legend below describes the meaning of the different visualizations in this document.
 
 ![](/images/c4-legend.png)
 
 ## System context and containers
-Each front-end application is a container of a bigger system, that provides access to various different users. In digital enterprises, this system is never stand-alone. It is connected to various other systems. The *context diagram* is an example reference for a software system and how it relates to its environment. 
+
+Each front-end application is a container of a bigger system, that provides access to various different users. In digital enterprises, this system is never stand-alone. It is connected to various other systems. The _context diagram_ is an example reference for a software system and how it relates to its environment.
 
 ![](/images/c4-system-context-diagram.png)
 
-The system consists of multiple containers. Containers are stand alone applications or a data store in the system. The front-end is one of these applications. The back-end can be a monolith or consist out of multiple micro-services. The front-end application uses an API container to talk to the back-end that is part of the system. However, the front-end application can also directly talk to external systems (e.g. public APIs). 
+The system consists of multiple containers. Containers are stand alone applications or a data store in the system. The front-end is one of these applications. The back-end can be a monolith or consist out of multiple micro-services. The front-end application uses an API container to talk to the back-end that is part of the system. However, the front-end application can also directly talk to external systems (e.g. public APIs).
 
 ![](/images/c4-container-diagram.png)
 
 ## Front-end architecture
-The main idea behind the front-end reference architecture is to implement [domain driven development](https://martinfowler.com/bliki/BoundedContext.html). Each bounded context is captured in a **module** (or [cell](https://github.com/wso2/reference-architecture/blob/master/reference-architecture-cell-based.md)) component. 
+
+The main idea behind the front-end reference architecture is to implement [domain driven development](https://martinfowler.com/bliki/BoundedContext.html). Each bounded context is captured in a **module** (or [cell](https://github.com/wso2/reference-architecture/blob/master/reference-architecture-cell-based.md)) component.
 
 > **NOTE**: a component is a conceptual grouping of functionalities.
 
@@ -50,12 +52,13 @@ Next to the module components, there are several general components present in a
 Besides the visualized application layer components, other components can be placed in this layer. Examples are a dedicated **[pub/sub](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern)** (e.g. for browser tab synchronization or scheduled events), the browser **history** stack, an **error tracker** or a **process manager** mediates and prioritizes heavy background operations (i.e. web-workers) to increase the performance of the web application.
 
 ## Application store
+
 Large applications use the store for global state management. The recommendation is that the store follows the patterns around [event sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). This means that the store should be:
 
 - It stores data in a **centralized** and normalizes the data, i.e. nesting of relational data is not allowed.
 - It is the owner of the data shape and mutations to increase resilience, i.e. it is **event-driven** and **immutable**.
 
-To follow the principles of this architecture, it uses an **access layer**. This _element_ is an [*facade*](https://en.wikipedia.org/wiki/Facade_pattern) and decouples the state interface, allowing for better composability. Store events (`get` and `update`) can be defined and invoked on a module-level. The access layer handles these events and applies them to the **data storage**, as visualized below. Optionally, the access layer can be connected to multiple data storages.
+To follow the principles of this architecture, it uses an **access layer**. This _element_ is an [_facade_](https://en.wikipedia.org/wiki/Facade_pattern) and decouples the state interface, allowing for better composability. Store events (`get` and `update`) can be defined and invoked on a module-level. The access layer handles these events and applies them to the **data storage**, as visualized below. Optionally, the access layer can be connected to multiple data storages.
 
 ![](/images/c4-store-element-diagram.png)
 
@@ -66,16 +69,17 @@ Whenever an element triggers an event, the data is changed. The access layer sen
 Data in the data storage is normalized or shaped like a [Statecharts](https://statecharts.github.io/). This allows for more accurate update events to the subscribers.
 
 ## API gateway
+
 > **NOTE**: in case of only one external source, a single API client can replace the gateway. Many open-source API clients support a similar structure (e.g. [Apollo Client](https://www.apollographql.com/client/)).
 
-The API gateway enables a consistent way to connect various external sources or APIs (e.g. REST and GraphQL). The *gateway*, *middleware*, and *client* elements act as the API gateway. Each external source has its own corresponding **client** element. This element sends out the actual request. Each client has a chain of **middleware**. A middleware is a [*decorator*](https://www.oreilly.com/library/view/learning-javascript-design/9781449334840/ch09s14.html) that enhances each request (e.g. add authentication information).
+The API gateway enables a consistent way to connect various external sources or APIs (e.g. REST and GraphQL). The _gateway_, _middleware_, and _client_ elements act as the API gateway. Each external source has its own corresponding **client** element. This element sends out the actual request. Each client has a chain of **middleware**. A middleware is a [_decorator_](https://www.oreilly.com/library/view/learning-javascript-design/9781449334840/ch09s14.html) that enhances each request (e.g. add authentication information).
 
 ![](/images/c4-gateway-element-diagram.png)
 
-Each request, regardless of the related external source, first goes through a *facade*. It allows for the sharing of generic logic between different clients of different external sources. This facade handles:
+Each request, regardless of the related external source, first goes through a _facade_. It allows for the sharing of generic logic between different clients of different external sources. This facade handles:
 
 - Interact with a _proxy_ cache or the application store, by getting and setting data. The gateway sets the lifespan of the cached data, using `state-while-revalidate` pattern.
-- [*circuit breaking*](https://en.wikipedia.org/wiki/Circuit_breaker_design_pattern) to ensure only external APIs are called when they are available. If it receives a server error, it bounces future outgoing requests for a limited time, allowing the API to restart itself.
+- [_circuit breaking_](https://en.wikipedia.org/wiki/Circuit_breaker_design_pattern) to ensure only external APIs are called when they are available. If it receives a server error, it bounces future outgoing requests for a limited time, allowing the API to restart itself.
 - Implement logic for authentication information refreshing. If a refresh request is in flight, it queues all other requests until the refresh request is finished.
 - Send requests to the correct middleware and client.
 
@@ -140,6 +144,6 @@ Role-based access management (RBAC) is the most straight forward auditing implem
 - It is possible to add RBAC rules to the actions in _modules_ and _components_.
 - RBAC rules can be added to the _facade_ element of the _gateway_ component.
 
-Blocking the rendering of the UI is not enough. When applied, _actions_ in modules and   can implement the RBAC rules. 
+Blocking the rendering of the UI is not enough. When applied, _actions_ in modules and can implement the RBAC rules.
 
-But governance is not all about auditing and security. Monitoring ensures more information, i.e. context, is available on defects. One can log all pub/sub, AP, navigation and store events. 
+But governance is not all about auditing and security. Monitoring ensures more information, i.e. context, is available on defects. One can log all pub/sub, AP, navigation and store events.
