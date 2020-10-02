@@ -12,20 +12,27 @@ This document describes a reactive reference architecture for client-side JavaSc
 
 ## Introduction
 
-The goal of the architecture is to enable engineers to create large-scale applications. These applications have many users, external connections, and long development time. To achieve control over the business outcomes, it requires an [antifragile](https://www.sciencedirect.com/science/article/pii/S1877050916302290) architecture. There are three core principles:
+The goal of the architecture is to enable engineers to create large-scale applications. These applications have many users, external connections, and long development time. To achieve control over the business outcomes, it requires an [antifragile](https://www.sciencedirect.com/science/article/pii/S1877050916302290) architecture. There are a few core principles that make up this architecture. 
 
-- **Composability** that enable development _agility_, and a better _scalable_ solution.
-- **Separation of Concerns**: for _maintainability_ and better _developer experience_.
-- A **reactive** application that updates based on (user interaction).
+### Separation of concerns
 
-From these principles, several concepts and patterns are applied throughout the architecture. 
+Separation of concerns is the activity of consciously enforcing logical boundaries between each of the architectural concerns. Based on the [clean architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) the following layers can be identified for any client-side application. 
 
-- **[Colocation](https://kentcdodds.com/blog/state-colocation-will-make-your-react-app-faster/)**: code should live as closely as possible to where it is being used, fitting the architecture vision (element, component or container level).
-- **[Optimistic UI](https://www.smashingmagazine.com/2016/11/true-lies-of-optimistic-user-interfaces/)**: store the expected result of asynchronous or heavy tasks in the state before the task is finished. After the task is finished, the result is stored.
-- **[Command Query Separation (CQS)](https://en.wikipedia.org/wiki/Command%E2%80%93query_separation)**: separation of read and write of the internal and external state.
-- **[Model-View-Presenter (MVP)](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93presenter)**: 
-	 
-The architecture is described using the [C4 architecture](https://c4model.com) notation. It slices a front-end application into 'components', as this fits most modern front-end frameworks. The legend below describes the meaning of the different visualizations in this document.
+![](/images/layers.png)
+
+On top of the described layers, the **[Command Query Separation (CQS)](https://en.wikipedia.org/wiki/Command%E2%80%93query_separation)** pattern is used to separate read and write operations, both internally and externally. 
+
+### Reactivity
+Modern client-side applications all resolve around reactivity. Based on user interaction, they expect applications to update automatically and immediately (e.g. [through optimistic UI](https://www.smashingmagazine.com/2016/11/true-lies-of-optimistic-user-interfaces/)). To allow for reactivity, and taking into account how modern frameworks work, the **[Model-View-Presenter (MVP)](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93presenter)** pattern is used. The translation from the described layers into the MVP pattern is visualized below. 
+
+![](/images/mvp.png)
+
+### Composability
+Client-side application of digital enterprises are of a big size. They can have parts shared across different applications, have an application build around micro-services, etc. In line with modern frameworks, composability is a key principle in client-side development. It enables for development _agility_ and solution _scalability_.
+
+Composability is not only achieved by breaking the application down into different layers. Reusable components and modules should be created as well. Modules group components and represent the concept of [domain driven development](https://martinfowler.com/bliki/BoundedContext.html). 
+
+Combining composability and the separation of concerns leads to this reference architecture. In the remainder of this document, the architecture is described using the [C4 architecture](https://c4model.com) notation. It slices a front-end application into modules. The legend below describes the meaning of the different visualizations in this document.
 
 ![](/images/c4-legend.png)
 
@@ -96,7 +103,7 @@ To ensure resilience, each request should follow the same basic [statechart](htt
 
 ## Modules
 
-Modules represent the concept of [domain driven development](https://martinfowler.com/bliki/BoundedContext.html). They implement the concept of MVP to arrange business-related logic, state, and UI components. It includes several _elements_, as visualized below. It consists out of a **presenter**, **UI components** and **commands/queries** (a.k.a. actions). Optionally, a module can have a **store** that acts similarly to the application store.
+Modules implement the concept of MVP to arrange business-related logic, state, and UI components. It includes several _elements_, as visualized below. It consists out of a **presenter**, **UI components** and **commands/queries** (a.k.a. actions). Optionally, a module can have a **store** that acts similarly to the application store.
 
 ![](/images/c4-module-element-diagram.png)
 

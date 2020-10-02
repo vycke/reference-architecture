@@ -3,6 +3,7 @@
 ## Version 3.0.0
 
 - Introduced new principles, concepts and patterns (CQS, SoC, MVP);
+- Added visualization around the layered architecture and MVP. 
 - Removed module-type section;
 - Removed application governance;
 - Created a new architecture for the modules;
