@@ -1,0 +1,30 @@
+@startuml system-context
+!include https://raw.githubusercontent.com/adrianvlupu/C4-PlantUML/latest/C4_Container.puml
+
+' LAYOUT_WITH_LEGEND()
+LAYOUT_LEFT_RIGHT()
+
+Person(user1, "Role A")
+Person(user2, "Role B")
+System_Boundary(system, "System") {
+  Container(fe, "front-end", "test")
+  Container(api, "api", "test")
+  Container(service1, "service 1", "test")
+  Container(service2, "service 2", "test")
+  ContainerDb(db1, "database 1", "test")
+  ContainerDb(db2, "database 2", "test")
+}
+
+System_Ext(extSystem1, "External System A")
+System_Ext(extSystem2, "External System B")
+
+Rel(user1, fe, "Uses")
+Rel(user2, fe, "Uses")
+Rel(fe, api, "Uses")
+Rel(api, service1, "Uses")
+Rel(api, service2, "Uses")
+Rel(fe, extSystem1, "Uses")
+Rel(service1, extSystem2, "Uses")
+Rel(service1, db1, "Uses")
+Rel(service2, db2, "Uses")
+@enduml

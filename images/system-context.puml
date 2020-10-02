@@ -1,0 +1,18 @@
+@startuml system-context
+!include https://raw.githubusercontent.com/adrianvlupu/C4-PlantUML/latest/C4_Context.puml
+
+' LAYOUT_WITH_LEGEND()
+LAYOUT_LEFT_RIGHT()
+
+Person(user1, "Role A")
+Person(user2, "Role B")
+System(system, "System", "System including the front-end")
+System_Ext(extSystem1, "External System A")
+System_Ext(extSystem2, "External System B")
+
+Rel(user1, system, "Uses")
+Rel(user2, system, "Uses")
+
+Rel(system, extSystem1, "Uses")
+Rel(system, extSystem2, "Uses")
+@enduml
