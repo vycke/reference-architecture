@@ -20,12 +20,14 @@ Separation of concerns is the activity of consciously enforcing logical boundari
 
 ![](/images/layers.png)
 
-On top of the described layers, the **[Command Query Separation (CQS)](https://en.wikipedia.org/wiki/Command%E2%80%93query_separation)** pattern is used to separate read and write operations, both internally and externally. 
+On top of the described layers, the **[Command Query Separation (CQS)](https://en.wikipedia.org/wiki/Command%E2%80%93query_separation)** pattern is used to separate read and write operations, both internally and externally. _Queries_ don't impact state, and return data, while _commands_ change the state, but do not return data.
 
 ### Reactivity
 Modern client-side applications all resolve around reactivity. Based on user interaction, they expect applications to update automatically and immediately (e.g. [through optimistic UI](https://www.smashingmagazine.com/2016/11/true-lies-of-optimistic-user-interfaces/)). To allow for reactivity, and taking into account how modern frameworks work, the **[Model-View-Presenter (MVP)](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93presenter)** pattern is used. The translation from the described layers into the MVP pattern is visualized below. 
 
 ![](/images/mvp.png)
+
+Most of these elements are described in this reference guide. In the _logic_ block (corresponding to the interaction layer), decisions are made. This means that validations, transformations etc. required for commands/query happen in this layer.  
 
 ### Composability
 Client-side application of digital enterprises are of a big size. They can have parts shared across different applications, have an application build around micro-services, etc. In line with modern frameworks, composability is a key principle in client-side development. It enables for development _agility_ and solution _scalability_.
