@@ -27,7 +27,7 @@ Modern client-side applications all resolve around reactivity. Based on user int
 
 ![](/images/mvp.png)
 
-Most of these elements are described in this reference guide. In the _logic_ block (corresponding to the interaction layer), decisions are made. This means that validations, transformations etc. required for commands/query happen in this layer.  
+Most of these elements are described in this reference guide. In the _interaction logic_ block (corresponding to the interaction layer), decisions are made. This means that validations, transformations etc. required for commands/query happen in this layer.  
 
 ### Composability
 Client-side application of digital enterprises are of a big size. They can have parts shared across different applications, have an application build around micro-services, etc. In line with modern frameworks, composability is a key principle in client-side development. It enables for development _agility_ and solution _scalability_.
