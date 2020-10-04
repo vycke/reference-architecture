@@ -1,8 +1,6 @@
 # Front-end reference architecture
 
-##### _version 3.0.0_
-
-**Author(s)**: Kevin Pennekamp | front-end architect | [vycke.dev](https://vycke.dev) | <hello@vycke.dev>
+**Version 3.0.0** | **Author**(s): Kevin Pennekamp | front-end architect | [vycke.dev](https://vycke.dev) | <hello@vycke.dev>
 
 > "A good architecture enables agility" - Simon Brown, author of the C4 model
 
@@ -10,45 +8,51 @@ This document describes a reactive reference architecture for client-side JavaSc
 
 > **DEFINITION**: a reference architecture is an abstract blueprint of a structure for a specific class of information systems. It describes a set of guidelines on how to use the structural description in designing a concrete architecture. 
 
-## Introduction
+## System context
+Client-side applications for digital enterprises are a single part of a bigger system. The systems we create are comprised of multiple internal and external/public services. Client-side applications connect to internal services through an API gateway. In some cases, the client-side application also connects to an external service directly (e.g. a public data set). The [C4 model](https://c4model.com) container diagram (or level 2) is displayed below.  
 
-The goal of the architecture is to enable engineers to create large-scale applications. These applications have many users, external connections, and long development time. To achieve control over the business outcomes, it requires an [antifragile](https://www.sciencedirect.com/science/article/pii/S1877050916302290) architecture. There are a few core principles that make up this architecture. 
+![](./images/c4-container.png)
+
+On this scale, a shared language of architectural patterns are required to ensure _maintainability_, _flexibility_ and _testability_. This reference architecture describes common patterns known from back-end development, but applied to client-side applications. 
+
+## Core principles
+To ensure _maintainability_, _flexibility_ and _testability_, there are four influential principles on which the design decisions in this reference architecture are made upon. 
 
 ### Separation of concerns
+Separation of concerns is the activity of consciously enforcing logical boundaries between each of the architectural concerns. A common methodology is the [clean architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html), displayed on the left. The two centered layers are always solutions. specific, while the outer layers could be sharable between solutions. 
 
-Separation of concerns is the activity of consciously enforcing logical boundaries between each of the architectural concerns. Based on the [clean architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) the following layers can be identified for any client-side application. 
+![](./images/layers.png)
 
-![](/images/layers.png)
+Although the clean architecture does not fit client-side applications, it gives insights into different layers that do exist in client-side applications. These layers are displayed on the right. Each feature on a client-side application is a vertical slice through these layers. 
 
-On top of the described layers, the **[Command Query Separation (CQS)](https://en.wikipedia.org/wiki/Command%E2%80%93query_separation)** pattern is used to separate read and write operations, both internally and externally. _Queries_ don't impact state, and return data, while _commands_ change the state, but do not return data.
+### Command query separation (CQS) and reactivity
+On top of separation of concerns through a layered architecture, the **[Command Query Separation (CQS)](https://en.wikipedia.org/wiki/Command%E2%80%93query_separation)** pattern is used. This pattern describes how read and write operations, both internal and external, should be split. _Queries_ don't impact state, and return data, while _commands_ change the state, but do not return data.
 
-### Reactivity
-Modern client-side applications all resolve around reactivity. Based on user interaction, they expect applications to update automatically and immediately (e.g. [through optimistic UI](https://www.smashingmagazine.com/2016/11/true-lies-of-optimistic-user-interfaces/)). To allow for reactivity, and taking into account how modern frameworks work, the **[Model-View-Presenter (MVP)](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93presenter)** pattern is used. The translation from the described layers into the MVP pattern is visualized below. 
+By splitting commands and queries, a client-side application can be made reactive. One component can subscribe to an application store through a query. When another component updates the store through a command, the first component is directly updated.  
 
-![](/images/mvp.png)
+![](./images/reactivity.png)
 
-Most of these elements are described in this reference guide. In the _interaction logic_ block (corresponding to the interaction layer), decisions are made. This means that validations, transformations etc. required for commands/query happen in this layer.  
+This can be extended into [optimistic UI](https://www.smashingmagazine.com/2016/11/true-lies-of-optimistic-user-interfaces/). When a command needs to send an update request to an external API, the expected result can be updated in the application. This results in information showing up directly on the screen, instead of waiting for the request result. 
 
-### Composability
-Client-side application of digital enterprises are of a big size. They can have parts shared across different applications, have an application build around micro-services, etc. In line with modern frameworks, composability is a key principle in client-side development. It enables for development _agility_ and solution _scalability_.
+### Domain-driven development
+Features are vertical slices in the layers defined in the "separation of concerns" section. Features ideally are loosely coupled from other features. However, in large-scale client-side applications, features are often coupled based on domain. By applying [domain driven development (DDD)](https://martinfowler.com/bliki/BoundedContext.html) we can group similar features in _modules_, like displayed in the below C4 component diagram (level 3). To ensure that users are presented the correct modules, a _router_ is used. 
 
-Composability is not only achieved by breaking the application down into different layers. Reusable components and modules should be created as well. Modules group components and represent the concept of [domain driven development](https://martinfowler.com/bliki/BoundedContext.html). 
+ ![](./images/c4-components.png)
+ 
+ > **NOTE**: modules represent the top three layers defined in the separation of concerns. The _gateway_ and _store_ represent the other two layers and are discussed in a different section.
 
-Combining composability and the separation of concerns leads to this reference architecture. In the remainder of this document, the architecture is described using the [C4 architecture](https://c4model.com) notation. It slices a front-end application into modules. The legend below describes the meaning of the different visualizations in this document.
+By dividing features in modules, the client-side application becomes more maintainable, scalable, and shareable. Modules can be extracted from one solution and used in another (e.g. as a micro front-end or NPM package). 
 
-![](/images/c4-legend.png)
+## Client-side architecture
 
-## System context and containers
 
-Each front-end application is a container of a bigger system, that provides access to various different users. In digital enterprises, this system is never stand-alone. It is connected to various other systems. The _context diagram_ is an example reference for a software system and how it relates to its environment.
+- General idea is MVP + CQS, to facilitate reactivity and separation of concern
+- Features grouped in modules for composability, using DDD.
 
-![](/images/c4-system-context-diagram.png)
+![](./images/mvp.png)
 
-The system consists of multiple containers. Containers are stand alone applications or a data store in the system. The front-end is one of these applications. The back-end can be a monolith or consist out of multiple micro-services. The front-end application uses an API container to talk to the back-end that is part of the system. However, the front-end application can also directly talk to external systems (e.g. public APIs).
 
-![](/images/c4-container-diagram.png)
-
-## Front-end architecture
+---
 
 The main idea behind the front-end reference architecture is to implement [domain driven development](https://martinfowler.com/bliki/BoundedContext.html). Each bounded context is captured in a **module** (or [cell](https://github.com/wso2/reference-architecture/blob/master/reference-architecture-cell-based.md)) component.
 
@@ -67,6 +71,8 @@ Besides the visualized application layer components, other components can be pla
 
 ## Application store
 
+- Also known as co-location https://kentcdodds.com/blog/colocation/
+
 Large applications use the store for global state management. The recommendation is that the store follows the patterns around [event sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). This means that the store should be:
 
 - It stores data in a **centralized** and normalizes the data, i.e. nesting of relational data is not allowed.
@@ -80,7 +86,7 @@ To follow the principles of this architecture, it uses an **access layer**. This
 
 An element triggers an event, the data is changed. The access layer sends an `update` event via an integrated [pub/sub](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern). Other elements can subscribe to these events and act to data changes. The access layer can subscribe to the pub/sub. This enables another way for the store to update (e.g. when requests come from a different browser tab).
 
-## API gateway
+## Gateway 
 
 > **NOTE**: in case of one external source, a single API client can replace the gateway. Many open-source API clients support a similar structure (e.g. [Apollo Client](https://www.apollographql.com/client/)).
 
