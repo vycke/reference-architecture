@@ -46,6 +46,9 @@ By dividing features in modules, the client-side application becomes more mainta
 - *Hard dependency (solid arrow)*: when module A is dependent on module B, module A can invoke commands impacting module B. 
 - *Soft dependency (dotted arrow)*: when module A is dependent on module B, module A can use queries or UI components from module B. 
 
+### Co-location
+[Co-location](https://kentcdodds.com/blog/colocation) describes that code and data should live as closely as possible to where it is used. This allows for a better developer experience, but above all, better maintainability of applications. 
+
 ## Module architecture
 To comply with the core principles, the main idea of the module architecture follows the [Model-View-Presenter](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93presenter) pattern. The general architecture is displayed below. 
 
@@ -59,7 +62,7 @@ Big modules comprise of multiple pages. In that case, the module includes a modu
 
 In the _operations_ (a.k.a. actions) is where decision are made. They link the controller, and therefore the UI, to our data stores and APIs. They go beyond commands and queries, as they implement additional logic as well (e.g. validation logic). 
 
-According to the [_colocation_](https://kentcdodds.com/blog/colocation) principle, data should live as close to the components that require it. This can be achieved by allowing data to live on a module level, in a _module store_. This makes modules more generic and shareable.   Other modules should be able to use this data by using the operations. 
+The _module store_ allows for atomic data storage, complying with the co-location principle. This allows modules to decouple from application elements, and become more shareable as well. 
 
 ## Application and module store
 Large applications use the store for global state management, the application store. However, according to the [co-location] principle data should live close to where it is used. This means that modules can have a store of their own as well. The recommendation is that the store follows the patterns around [event sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). This means that the store should be:
