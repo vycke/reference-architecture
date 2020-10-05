@@ -32,7 +32,7 @@ By splitting commands and queries, a client-side application can be made _reacti
 
 ![](./images/reactivity.png)
 
-This can be extended into [optimistic UI](https://www.smashingmagazine.com/2016/11/true-lies-of-optimistic-user-interfaces/). When a command needs to send an update request to an external API, the expected result can be updated in the application. This results in information showing up directly on the screen, instead of waiting for the request result. 
+Using CQS cache invalidation becomes easier. When executing a query (done by operations) the cache is first checked. If the record exists and is flagged as 'valid', no request is send out. The moment a command is executed on a record, it is set to 'invalid'. On the next query, the value from the cache is returned first, but a request is send out. The cache gets updated with the response value, which broadcasts the changes to the UI. This allows for _reactivity_, _observability_ and the [_optimistic UI_](https://www.smashingmagazine.com/2016/11/true-lies-of-optimistic-user-interfaces/) pattern. 
 
 ### Domain-driven development
 Features are vertical slices in the layers defined in the "separation of concerns" section. Features ideally are loosely coupled from other features. However, in large-scale client-side applications, features are often coupled based on domain. By applying [domain driven development (DDD)](https://martinfowler.com/bliki/BoundedContext.html) we can group similar features in _modules_, like displayed in the below C4 component diagram (level 3). To ensure that users are presented the correct modules, a _router_ is used. 
@@ -59,7 +59,7 @@ Big modules comprise of multiple pages. In that case, the module includes a modu
 
 In the _operations_ (a.k.a. actions) is where decision are made. They link the controller, and therefore the UI, to our data stores and APIs. They go beyond commands and queries, as they implement additional logic as well (e.g. validation logic). 
 
-According to the [_co-location_]() principle, data should live as close to the components that require it. This can be achieved by allowing data to live on a module level, in a _module store_. This makes modules more generic and shareable.   Other modules should be able to use this data by using the operations. 
+According to the [_colocation_](https://kentcdodds.com/blog/colocation) principle, data should live as close to the components that require it. This can be achieved by allowing data to live on a module level, in a _module store_. This makes modules more generic and shareable.   Other modules should be able to use this data by using the operations. 
 
 ## Application and module store
 Large applications use the store for global state management, the application store. However, according to the [co-location] principle data should live close to where it is used. This means that modules can have a store of their own as well. The recommendation is that the store follows the patterns around [event sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). This means that the store should be:
@@ -89,10 +89,6 @@ Each request, regardless of the related external source, first goes through a _c
 - Send requests to the correct middleware and client.
 - Send update requests to a _proxy_ cache or the application store. 
 
-If a request has a `cache-network` strategy, the _operation_ from a module first retrieves a cached value from the store. When the gateway receives the response, it sends the updated data to the request initiator and the cache.
-
-> **NOTE**: in case your chosen UI framework does not allow of UI updates around asynchronous calls, you can let the element subscribe to the pub/sub and have the facade send the response via the pub/sub. 
-
 ## User interface component anatomy
 User interface (UI) components are the most important parts of the application. It requires the most development time. It is where the user sees and interacts with the application. There are three different component types.
 
@@ -100,7 +96,7 @@ User interface (UI) components are the most important parts of the application. 
 - **Interaction** components are generic components that allow the user to interact with the application (buttons, links, form elements, etc.). Similar to layout components they are without styling by default, exist outside the modules.
 - **Content** components hold the user interface around the business logic. These components live within the modules and use layout components. They comprise out of five different elements that interact with each other.
 
-![](./images/ui-component-anatomy.png)
+![](./images/ui-anatomy.png)
 
 The API is how the parent UI component interact with this component. The parent component can provide values, configuration, and callbacks through the API. The values and configuration are, combined with the component state, used to render the UI.
 
