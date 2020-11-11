@@ -1,6 +1,6 @@
 # Front-end reference architecture
 
-**Version 3.0.0** | **Author**(s): Kevin Pennekamp | front-end architect | [vycke.dev](https://vycke.dev) | <hello@vycke.dev>
+**Version 3.0.0** | **Author**: Kevin Pennekamp | front-end architect | [vycke.dev](https://vycke.dev) | <hello@vycke.dev>
 
 > "A good architecture enables agility" - Simon Brown, author of the C4 model
 
@@ -80,11 +80,11 @@ Large applications use the store for global state management, the application st
 
 ![](./images/c4-store.png)
 
-To follow the principles of this architecture, it uses an **access layer**. This _element_ is an [_facade_](https://en.wikipedia.org/wiki/Facade_pattern) and decouples the state interface, allowing for better composability. Store events (`get` and `update`) can be defined and invoked on a module-level. The access layer handles these events and applies them to the **storage**. The access layer can be connected to many data storage.
+To follow the principles of this architecture, it uses an **access layer**. This _element_ is an [_facade_](https://en.wikipedia.org/wiki/Facade_pattern) and decouples the state interface, allowing for better composability. Store events (e.g. via a `dispatch` function) can be defined and invoked on a module-level. The access layer handles these events and applies them to the **storage**. The access layer can be connected to many data storage.
 
 > **NOTE**: many front-end applications use global state management for all data. Many existing global state management packages like [Redux](https://redux.js.org/style-guide/style-guide) have a coupled state interface. Although events are defined elsewhere, they have to be configured in the store. Another option is using an atomic state library.
 
-An element triggers an event, the data is changed. The access layer sends an `update` event via an integrated [pub/sub](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern). Other elements can subscribe to these events and activities to data changes. The access layer can subscribe to the pub/sub. This enables another way for the store to update (e.g. when requests come from a different browser tab).
+An element triggers an event, the data is changed. The access layer sends an `update` or `changed` event via an integrated event emitter or [pub/sub](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern). Other elements can subscribe to these events and activities to data changes. The access layer can subscribe to the event emitter. This enables another way for the store to update (e.g. when requests come from a different browser tab).
 
 ## Gateway
 
