@@ -36,7 +36,7 @@ By splitting commands and queries, a client-side application can be made _reacti
 
 ![](./images/reactivity.png)
 
-Using CQS, cache invalidation becomes easier. When executing a query (done by operations) the cache is first checked. If the record exists and is flagged as 'valid', no request is sent out. The moment a command is executed on a record, it is set to 'invalid'. On the next query, the value from the cache is returned first, but a request is sent out. The cache gets updated with the response value, which broadcasts the changes to the UI. This allows for _reactivity_, _observability_, and the [_optimistic UI_](https://www.smashingmagazine.com/2016/11/true-lies-of-optimistic-user-interfaces/) pattern.
+Using CQS, cache invalidation according the `stale-while-revalidate` pattern becomes easier. When executing a query (done by operations) the cache is first checked. If the record exists and is flagged as 'valid', no request is sent out. The moment a command is executed on a record, it is set to 'invalid'. On the next query, the value from the cache is returned first, but a request is sent out. The cache gets updated with the response value, which broadcasts the changes to the UI. This allows for _reactivity_, _observability_, and the [_optimistic UI_](https://www.smashingmagazine.com/2016/11/true-lies-of-optimistic-user-interfaces/) pattern.
 
 ### Domain-driven development
 
@@ -99,7 +99,7 @@ Each request, regardless of the related external source, first goes through a _c
 - [_circuit breaking_](https://en.wikipedia.org/wiki/Circuit_breaker_design_pattern) to ensure only external APIs are called when they are available. If it receives a server error, it bounces future outgoing requests for a limited time, allowing the API to restart itself.
 - Implement logic for authentication information refreshing. If a refresh request is in flight, it queues all other requests until the refresh request is finished.
 - Send requests to the correct middleware and client.
-- Send update requests to a _proxy_ cache or the application store.
+- Handle the `stale-while-revalidate` pattern in cache invalidation combined with the application store or a _proxy_ cache.
 
 ## User interface component anatomy
 
