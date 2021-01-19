@@ -1,94 +1,85 @@
-# Front-end reference architecture
+# Client-side software design
 
-**Version 3.0.0** | **Author**: Kevin Pennekamp | front-end architect | [vycke.dev](https://vycke.dev) | <hello@vycke.dev>
+**2021 version** | **Author**: Kevin Pennekamp | front-end architect | [kevtiq.dev](https://kevtiq.dev) | <hello@kevtiq.dev>
 
-> "A good architecture enables agility" - Simon Brown, author of the C4 model
+This document describes the concepts and guidelines around client-side software design for digital enterprise applications. It shows how what is important to focus on, and how to apply structure. The goals of this document can be deduced to three goals. 
 
-This document describes a reactive reference architecture for digital enterprise client-side applications. It offers framework-agnostic best practices focused on the architecture behind the user interface.
+- **Enable agility**. A good architecture helps you to embrace change from different angles (technology, business, requirements, etc.). This helps you further minimize the cost of change. 
+- **Minimize cost of change**. Create testable and maintainable code, and look ahead of what might come. A good architecture and a set of guidelines allows for easier technology decisions and change it along the way. 
+- **Shared understanding**. Modern client-side libraries do not offer guidelines on structure and organizing code. This requires a shared language of architectural patterns.
 
-> **DEFINITION**: a reference architecture is an abstract blueprint of a structure for a specific class of information systems. It describes a set of guidelines on how to use the structural description in designing a concrete architecture.
+## Context & concepts
 
-## System context
-
-Client-side applications for digital enterprises are a single part of a bigger system. The systems we create comprise many internal and external/public services. Client-side applications connect to internal services through an API gateway. Sometimes, the client-side application also connects to an external service (e.g. a public data set). The [C4 model](https://c4model.com) container diagram (or level 2) is displayed below.
+Client-side applications are almost always part of a bigger system. The systems we create comprise many internal and external/public services. Client-side applications connect to internal services through the published APIs of the system. The [C4 model](https://c4model.com) container diagram (or level 2) is displayed below.
 
 ![](./images/c4-container.png)
 
-Modern solutions are library-based. They do not offer guidelines in how to structure and organize code to achieve _maintainability_, _flexibility_, and _testability_. This requires a shared language of architectural patterns. This document describes common patterns from software development applied to the client-side.
+Due to this place in a system, the concepts of a client-side application differ from the other containers in the system. The client-side application focuses on: 
 
-## Core principles
+- Communicating with external APIs.
+- Invoking and handling user events.
+- Interact with the OS (e.g. browser, iOS).
+- State management inside the application. 
+- Styling and accessibility.
 
-There are four principles influencing the decisions of this reference architecture.
+## Design principles
+
+A reference architecture is an abstract blueprint for a specific class of information systems. It describes a set of guidelines on how to design an application architecture. It shows core components, the interrelationships among them, and their essential attributes. 
+
+This reference architecture is a guideline for designing client-side application. It offers framework-agnostic principles focused on the architecture behind the user interface. It applies to single-page, server-side rendered, and component-based mobile applications (e.g. React Native). 
 
 ### Separation of concerns
+The first and most important principle is *separation of concerns*. It is the activity of enforcing logical boundaries between each of the architectural concerns. It allows for *maintainable* and *testable* code. 
 
-Separation of concerns is the activity of enforcing logical boundaries between each of the architectural concerns. A common method is the [clean architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html), displayed on the left. The two centered layers are always solutions. specific, while the outer layers could be sharable between solutions.
+#### Clean architecture
+A common method is the [clean architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html). The UI is in the original outer layer of the clean architecture. But, modern client-side frameworks make client-side applications more like traditional applications. Thus several layers can apply to client-side applications, as displayed below. 
 
 ![](./images/layers.png)
 
-Although clean architecture does not fit client-side applications, it gives insights into different layers that exist in client-side applications. These layers are displayed on the right. Each feature on a client-side application is a vertical slice through these layers.
+The three depicted layers show us the first level of separation. The separation helps us to understand how users interact with our code. But it also shows how our code interacts with the browser and external APIs. 
 
-### Command query separation (CQS)
+- **Infrastructure**: all interface-related code (UI, browser APIs, and external APIs). The implementation is often abstracted into adapters (e.g. `Axios` or `React`).
+- **Application**: describes all (user) interactions (e.g. clicking a submit button). Often called features, use-cases, actions, or operations. 
+- **Domain**: holds all business domain-related logic required for the UI (e.g. validation). Most domain logic lives elsewhere in the system.
 
-On top of the separation of concerns through a layered architecture, the **[Command Query Separation (CQS)](https://en.wikipedia.org/wiki/Command%E2%80%93query_separation)** pattern is used. This pattern describes how to read and write operations, both internal and external, should be split. _Queries_ don't impact state, and return data, while _commands_ change the state, but do not return data.
+#### Model-View-Presenter (MVP)
+This first layer of separation aids in creating a shared understanding of a client-side application. But,  it is a too high level for implementation. When dissecting a complete feature as a vertical slice, we see touching all layers of the clean architecture. Structuring this results in a decomposed version of the [Model-View-Presenter](https://en.wikipedia.org/wiki/Model–view–presenter) pattern. Note that the displayed colors match those of our clean architecture visualization.
 
-By splitting commands and queries, a client-side application can be made _reactive_. One component can subscribe to an application store through a query. When another component updates the store through a command, the first component is updated.
+![](./images/mvp.png)
 
-![](./images/reactivity.png)
+Each feature is a vertical slice through this model. The view layer is responsible to show data and generating user events. Domain logic determines what to show, or what user event to invoke. The presenter/controller links the view layer with the model layer. It can use information from the URL in its role, like `userId` (*route state*).
 
-Using CQS, cache invalidation according the `stale-while-revalidate` pattern becomes easier. When executing a query (done by operations) the cache is first checked. If the record exists and is flagged as 'valid', no request is sent out. The moment a command is executed on a record, it is set to 'invalid'. On the next query, the value from the cache is returned first, but a request is sent out. The cache gets updated with the response value, which broadcasts the changes to the UI. This allows for _reactivity_, _observability_, and the [_optimistic UI_](https://www.smashingmagazine.com/2016/11/true-lies-of-optimistic-user-interfaces/) pattern.
+> A page is a good example of a presenter/controller, as many components use the same data and operations. But, in complex settings components can have a controller integrated.
 
-### Domain-driven development
+User events go through a chain of operations in the model layer. Operations translate the user event into fetch requests or state mutations. Operations represent the *application* layer from the clean architecture. The chain of operations can include general-purpose operations (e.g. logging and authorization).
 
-Features are vertical slices in the layers defined in the "separation of concerns" section. Features are decoupled from other features. But, in large-scale client-side applications, features are often coupled based on domain. By applying [domain-driven development (DDD)](https://martinfowler.com/bliki/BoundedContext.html) we can group similar features in _modules_ like displayed in the below C4 component diagram (level 3). To ensure that users are presented with the correct modules, a _router_ is used.
+The gateway and store are adapters from the *infrastructure* layer. The gateway handles fetch requests and provides on the request status (*meta state*). The store handles persist data (either persists for a session, or between sessions). It holds a cached version of server data (*remote state*) and state required in the application (*global state*). Both are responsible to update the presenter on state change. 
+
+> **TESTABILITY**: the described separation allows for more testable code, but also understanding better what to test. The inner layers of the clean architecture are more stable and less likely to change in the long-term. These are the parts you should test. The outer layer is subjected to change and testing is less important there. However, abstracting the infrastructure in adapters allows for another testable layer. This effectively means that everything in the 'model layer' of the MVP model should be tested. 
+
+### Command-query separation (CQS)
+The operations can be further separated using [command-query separation (CQS)](https://en.wikipedia.org/wiki/Command%E2%80%93query_separation). This pattern describes how to split read and write operations. _Queries_ only return data and don't impact state. _Commands_ change the state, but do not return data.
+
+By splitting commands and queries, a client-side application becomes _reactive_. One component can subscribe to an application store through a query. Another component updates the store through a command, invoking change in the first component.
+
+![](./images/stale-while-revalidate.png)
+
+This pattern allows for the `stale-while-revalidate` caching strategy. When executing a query, the store serves a cached version first. If the cached version is 'invalid', the operation sends a new request. Upon receiving the response, the store updates and broadcasts the changes. Commands touching records in the store, invalidate those records (e.g. [optimistic UI](https://www.smashingmagazine.com/2016/11/true-lies-of-optimistic-user-interfaces/)). 
+
+### Co-location
+Even when applying the first two principles, large client-side applications can become unmaintainable. [Co-location](https://kentcdodds.com/blog/colocation) describes that code and data should live close to where it is used. This allows for better developer experience, but above all, better maintainability of applications. The co-location principle is like the idea of [screaming architecture](https://blog.cleancoder.com/uncle-bob/2011/09/30/Screaming-Architecture.html). This describes that the general structure of your architecture should show the purpose of the application.
 
 ![](./images/c4-components.png)
 
-> **NOTE**: modules represent the top three layers defined in the separation of concerns. The _gateway_ and _store_ represent the other two layers and are discussed in a different section. Other elements can exist on this level (e.g. pub/sub, history stack, web-workers).
+By grouping features into descriptive modules, you can achieve a screaming architecture. The gateway and the store of the visualized architecture are generic. Thus a  module contains UI components, UI logic, controllers, and operations. 
 
-By dividing features into modules, the client-side application becomes more maintainable, scalable, and shareable. Modules can be extracted from one solution and used in another (e.g. as a micro front-end or NPM package). Modules can depend on each other. There are two types of dependencies:
+## Infrastructure layer patterns
+The infrastructure layer in the clean architecture is the layer most subjected to change. In client-side applications it is dependent on the choice of technology. Various frameworks exist for the UI (e.g. React and Vue) and many more will come into play in coming years. On the other end, new API technologies like GraphQL are gaining in popularity. Because of this nature, adapters are used to stabilize the implementation.   
 
-- _Hard dependency (solid arrow)_: when module A depends on module B, module A can invoke commands impacting module B.
-- _Soft dependency (dotted arrow)_: when module A depends on module B, module A can use queries or UI components from module B.
+This document describes either how to implement a mature adapter, or conceptually look at elements from the infrastructure layer. 
 
-### Co-location
-
-[Co-location](https://kentcdodds.com/blog/colocation) describes that code and data should live close to where it is used. This allows for better developer experience, but above all, better maintainability of applications.
-
-## Module architecture
-
-To follow the core principles, the main idea of the module architecture follows the [Model-View-Presenter](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93presenter) pattern. The general architecture is displayed below.
-
-![](./images/c4-elements.png)
-
-The _controller_ can take many forms. It can be a UI component (e.g. page) that combines state interaction and external calls with UI rendering. Or, it can be a controller with no UI that is used by many UI components to perform commands and queries. The last possibility is that the controller is integrated into a UI component.
-
-> **NOTE**: React Context can a controller-type presenter.
-
-Big modules consist of many pages. In that case, the module includes a module-level **router**, implemented on the highest level. This can be the controller or a wrapper. In the latter's case, it is common that each page has, or is, its controller.
-
-In the _operations_ (a.k.a. actions) is where decision are made. They link the controller, and so the UI, to our data stores and APIs. They go beyond commands and queries, as they implement more logic as well (e.g. validation logic).
-
-The _module store_ allows for atomic data storage, complying with the co-location principle. This allows modules to decouple from application elements and become more shareable.
-
-## Application and module store
-
-Large applications use the store for global state management, the application store. But, according to the [co-location] principle data should live close to where it is used. This means that modules can have a store of their own. The recommendation is that the store follows the patterns around [event sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). This means that the store should be:
-
-- It stores data in a **centralized** and normalizes the data, i.e. nesting of relational data is not allowed.
-- It is the owner of the data shape and mutations to increase resilience, i.e. it is **event-driven** and **immutable**.
-
-![](./images/c4-store.png)
-
-To follow the principles of this architecture, it uses an **access layer**. This _element_ is an [_facade_](https://en.wikipedia.org/wiki/Facade_pattern) and decouples the state interface, allowing for better composability. Store events (e.g. via a `dispatch` function) can be defined and invoked on a module-level. The access layer handles these events and applies them to the **storage**. The access layer can be connected to many data storage.
-
-> **NOTE**: many front-end applications use global state management for all data. Many existing global state management packages like [Redux](https://redux.js.org/style-guide/style-guide) have a coupled state interface. Although events are defined elsewhere, they have to be configured in the store. Another option is using an atomic state library.
-
-An element triggers an event, the data is changed. The access layer sends an `update` or `changed` event via an integrated event emitter or [pub/sub](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern). Other elements can subscribe to these events and activities to data changes. The access layer can subscribe to the event emitter. This enables another way for the store to update (e.g. when requests come from a different browser tab).
-
-## Gateway
-
-The API gateway enables a consistent way to connect various external sources or APIs (e.g. REST and GraphQL). Each external source has its own corresponding **client** element. This element sends out the request. Each client has a chain of **middleware**. A middleware is a [_decorator_](https://www.oreilly.com/library/view/learning-javascript-design/9781449334840/ch09s14.html) that enhances each request (e.g. add authentication information).
+### Gateway
+The API gateway enables a consistent way to connect various external sources or APIs (e.g. REST and GraphQL). It includes a *client* (e.g. `Axios` client) that sends out the requests. Each request goes through a chain of **middleware**. A middleware is a [_decorator_](https://www.oreilly.com/library/view/learning-javascript-design/9781449334840/ch09s14.html) that enhances each request (e.g. add authentication information).
 
 ![](./images/c4-gateway.png)
 
@@ -101,7 +92,18 @@ Each request, regardless of the related external source, first goes through a _c
 - Send requests to the correct middleware and client.
 - Handle the `stale-while-revalidate` pattern in cache invalidation combined with the application store or a _proxy_ cache.
 
-## User interface component anatomy
+### Application store
+Large applications use the store for global state management, the application store. But, according to the [co-location] principle data should live close to where it is used. This means that modules can have a store of their own. The recommendation is that the store follows the patterns around [event sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). This means that the store should be *centralized*, *event-driven* and *immutable*. 
+
+![](./images/c4-store.png)
+
+To follow the principles of this architecture, it uses an **access layer**. This _element_ is an [_facade_](https://en.wikipedia.org/wiki/Facade_pattern) and decouples the state interface, allowing for better composability. The access layer handles events and applies them to the *storage*. The access layer can be connected to different data storages.
+
+> **NOTE**: many front-end applications use global state management for all data. Many existing global state management packages like [Redux](https://redux.js.org/style-guide/style-guide) have a coupled state interface. Although events are defined elsewhere, they have to be configured in the store. Another option is using an atomic state library.
+
+An element triggers an event and the data is changed. The access layer sends an event to an integrated event emitter or [pub/sub](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern). The emitter broadcasts the change to all UI components subscribed to these events. 
+
+### User interface component anatomy
 
 User interface (UI) components are the most important parts of the application. It requires the most development time. It is where the user sees and interacts with the application. There are three different component types.
 
@@ -116,3 +118,13 @@ The API is how the parent UI component interacts with this component. The parent
 A user interacts with the UI. This interaction invokes an action. A component can use an action from the module or define the action itself. The action can update the component state or invoke a callback received through the API. The observer of a component listens to the values from the API and the state for changes. When a change happens, it invokes a re-render of the UI and invokes an action.
 
 > **NOTE**: modern UI frameworks like React and Vue handle the described observer. React handles re-renders of the UI, while the life-cycles methods (e.g. `useEffect`) handle invoking actions.
+
+### State management
+In modern client-side applications, state management is one key concepts. In general, there are five different types of state present in an application.  
+
+- **Local**: state that is used by a single UI component.
+- **Shared**: state that is used by multiple UI components. It can live in a parent component, or on a global level.  
+- **Meta**: also known was 'state about state'. A common example is a `loading` state around fetch requests.
+- **Route**: state stored in the current URL of the application (e.g. object IDs or pagination information). 
+- **Remote**: a copy of data coming from a server. 
+
